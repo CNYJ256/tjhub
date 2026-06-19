@@ -1,4 +1,4 @@
-import type { AdminMeResponse } from '../types/admin'
+import type { AdminItemListRow, AdminMeResponse } from '../types/admin'
 
 async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
@@ -19,4 +19,12 @@ async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export function fetchAdminMe(): Promise<AdminMeResponse> {
   return adminFetch<AdminMeResponse>('/api/admin/me')
+}
+
+export function fetchAdminItems(type?: string, status?: string): Promise<{ ok: true; items: AdminItemListRow[] }> {
+  const params = new URLSearchParams()
+  if (type) params.set('type', type)
+  if (status) params.set('status', status)
+  const query = params.toString()
+  return adminFetch(`/api/admin/items${query ? `?${query}` : ''}`)
 }

@@ -10,6 +10,12 @@ export const router = createRouter({
     { path: '/contribute', name: 'contribute', component: () => import('../views/ContributeView.vue') },
     { path: '/about', name: 'about', component: () => import('../views/AboutView.vue') },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
+    { path: '/admin/pages', name: 'admin-pages', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'page', title: '页面' } },
+    { path: '/admin/links', name: 'admin-links', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'link', title: '导航链接' } },
+    { path: '/admin/guides', name: 'admin-guides', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'guide', title: '指南' } },
+    { path: '/admin/projects', name: 'admin-projects', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'project', title: '项目' } },
+    { path: '/admin/categories', name: 'admin-categories', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'category', title: '分类' } },
+    { path: '/admin/banners', name: 'admin-banners', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'banner', title: '轮播' } },
     { path: '/guides/:slug', name: 'guide', component: () => import('../views/GuideView.vue') },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') }
   ],
