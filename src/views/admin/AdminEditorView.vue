@@ -19,6 +19,8 @@ const versions = ref<any[]>([])
 const latestPayload = ref<Record<string, unknown>>({})
 
 async function loadItem() {
+  loading.value = true
+  error.value = ''
   try {
     const response = await fetchAdminItem(itemId)
     item.value = response.item
@@ -27,6 +29,8 @@ async function loadItem() {
     latestPayload.value = latest?.payload_json ? JSON.parse(latest.payload_json) : {}
   } catch (err) {
     error.value = err instanceof Error ? err.message : '无法读取内容。'
+  } finally {
+    loading.value = false
   }
 }
 

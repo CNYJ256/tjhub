@@ -13,6 +13,11 @@ interface JwtHeader {
   typ: string
 }
 
+interface AccessClaimsEnv {
+  ACCESS_AUD: string
+  ACCESS_TEAM_DOMAIN: string
+}
+
 function decodeJwtHeader(token: string): JwtHeader {
   const [header] = token.split('.')
   if (!header) throw new Error('Access JWT 格式无效。')
@@ -27,7 +32,7 @@ function base64UrlToBytes(input: string): Uint8Array {
 }
 
 async function fetchJwks(teamDomain: string): Promise<Record<string, JsonWebKey>> {
-  const url = `https://${teamDomain}/cdn-cgi/access/certs`
+  const url = `${normalizeTeamDomain(teamDomain)}/cdn-cgi/access/certs`
   const response = await fetch(url)
   if (!response.ok) throw new Error(`JWKS 获取失败: ${response.status}`)
   const { keys } = await response.json() as { keys: Array<JsonWebKey & { kid: string }> }
@@ -44,6 +49,7 @@ async function verifyJwtSignature(token: string, env: Env): Promise<boolean> {
 
   try {
     const header = decodeJwtHeader(token)
+    if (header.alg !== 'RS256') return false
     const jwks = await fetchJwks(env.ACCESS_TEAM_DOMAIN)
     const jwk = jwks[header.kid]
     if (!jwk) return false
@@ -66,6 +72,46 @@ async function verifyJwtSignature(token: string, env: Env): Promise<boolean> {
   }
 }
 
+function normalizeTeamDomain(teamDomain: string): string {
+  const trimmed = teamDomain.trim().replace(/\/$/, '')
+  return trimmed.startsWith('https://') ? trimmed : `https://${trimmed}`
+}
+
+export function validateAccessClaims(
+  payload: Record<string, unknown>,
+  env: AccessClaimsEnv,
+  nowSeconds = Math.floor(Date.now() / 1000)
+): { ok: true } | { ok: false; message: string } {
+  const email = typeof payload.email === 'string' ? payload.email : ''
+  const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud]
+  const issuer = typeof payload.iss === 'string' ? payload.iss.replace(/\/$/, '') : ''
+  const expectedIssuer = normalizeTeamDomain(env.ACCESS_TEAM_DOMAIN)
+  const exp = typeof payload.exp === 'number' ? payload.exp : null
+  const nbf = typeof payload.nbf === 'number' ? payload.nbf : null
+
+  if (!email) {
+    return { ok: false, message: 'Access 身份缺少邮箱。' }
+  }
+
+  if (!aud.includes(env.ACCESS_AUD)) {
+    return { ok: false, message: 'Access JWT audience 不匹配。' }
+  }
+
+  if (issuer !== expectedIssuer) {
+    return { ok: false, message: 'Access JWT issuer 不匹配。' }
+  }
+
+  if (exp == null || exp <= nowSeconds) {
+    return { ok: false, message: 'Access JWT 已过期。' }
+  }
+
+  if (nbf != null && nbf > nowSeconds) {
+    return { ok: false, message: 'Access JWT 尚未生效。' }
+  }
+
+  return { ok: true }
+}
+
 export function decodeJwtPayload(token: string): Record<string, unknown> {
   const [, payload] = token.split('.')
   if (!payload) {
@@ -85,23 +131,15 @@ export async function validateAccessJwt(request: Request, env: Env): Promise<Acc
   }
 
   const payload = decodeJwtPayload(token)
-  const email = typeof payload.email === 'string' ? payload.email : ''
-  const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud]
-
-  if (!email) {
-    return errorJson(401, 'unauthorized', 'Access 身份缺少邮箱。')
-  }
-
-  if (!aud.includes(env.ACCESS_AUD)) {
-    return errorJson(401, 'unauthorized', 'Access JWT audience 不匹配。')
-  }
+  const claims = validateAccessClaims(payload, env)
+  if (!claims.ok) return errorJson(401, 'unauthorized', claims.message)
 
   const signatureValid = await verifyJwtSignature(token, env)
   if (!signatureValid) {
     return errorJson(401, 'unauthorized', 'Access JWT 签名验证失败。')
   }
 
-  return { email, name: typeof payload.name === 'string' ? payload.name : undefined }
+  return { email: String(payload.email), name: typeof payload.name === 'string' ? payload.name : undefined }
 }
 
 export async function getAdminUser(env: Env, identity: AccessIdentity): Promise<AdminUser | null> {

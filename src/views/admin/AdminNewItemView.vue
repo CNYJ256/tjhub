@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminShell from '../../components/admin/AdminShell.vue'
 import { createAdminItem } from '../../services/adminApi'
+import { createDefaultPayload } from '../../services/adminPayload'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,7 +34,7 @@ async function create() {
       type,
       slug: slug.value.trim(),
       title: title.value.trim(),
-      payload: {}
+      payload: createDefaultPayload(type, title.value)
     })
     router.push(`/admin/items/${result.itemId}`)
   } catch (err) {
