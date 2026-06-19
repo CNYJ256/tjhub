@@ -61,6 +61,9 @@ export interface PageBlock {
   collection?: 'links' | 'projects'
   placement?: string
   limit?: number
+  imageUrl?: string
+  primaryLink?: string
+  secondaryLink?: string
 }
 
 export interface PageContent extends BaseContent {
@@ -80,6 +83,7 @@ export interface ContentIndex {
   links: LinkEntry[]
   projects: ProjectEntry[]
   categories: Record<string, CategoryMeta>
+  banners: BannerEntry[]
 }
 
 export interface BannerEntry {

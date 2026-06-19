@@ -96,7 +96,7 @@ function loadCategories(): Record<string, CategoryMeta> {
 }
 
 export function loadContentIndex(): ContentIndex {
-  const index: ContentIndex = { pages: [], guides: [], links: [], projects: [], categories: loadCategories() }
+  const index: ContentIndex = { pages: [], guides: [], links: [], projects: [], categories: loadCategories(), banners: [] }
 
   for (const entry of loadRawMarkdown()) {
     try {

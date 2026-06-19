@@ -24,7 +24,8 @@ function snapshotToIndex(snapshot: PublicContentSnapshot): ContentIndex {
     guides: snapshot.guides,
     links: snapshot.links,
     projects: snapshot.projects,
-    categories: snapshot.categories
+    categories: snapshot.categories,
+    banners: snapshot.banners
   }
 }
 
