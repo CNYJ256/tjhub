@@ -1,0 +1,15 @@
+official:
+  label: 官方网站
+  description: 学校官方系统和服务入口
+tools:
+  label: 常用工具
+  description: 多数同学都会用到的校园工具
+learning:
+  label: 学习选课
+  description: 课程、选课、图书馆和学术资源入口
+life:
+  label: 校园生活
+  description: 生活、交通、后勤和医疗相关入口
+student-project:
+  label: 学生项目
+  description: 学生维护的项目和友链
