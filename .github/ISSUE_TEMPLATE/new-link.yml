@@ -1,0 +1,33 @@
+name: 新增网站或工具入口
+description: 推荐一个适合 TJHub 收录的入口
+title: "新增入口："
+labels: ["content"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: 名称
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 链接
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 用途说明
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: 来源性质
+      options:
+        - 官方网站
+        - 学生项目
+        - 第三方工具
+    validations:
+      required: true

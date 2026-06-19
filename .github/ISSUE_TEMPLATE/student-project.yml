@@ -1,0 +1,37 @@
+name: 学生项目或友链申请
+description: 推荐一个学生项目、工具站或资料站
+title: "学生项目："
+labels: ["project"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: 项目名称
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 项目链接
+    validations:
+      required: true
+  - type: input
+    id: maintainers
+    attributes:
+      label: 维护者
+      description: 可填写组织、昵称或项目主页中公开展示的维护者信息。
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: 项目说明
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: 隐私、登录或版权风险说明
+      description: 如无相关风险，请填写"无"。
+    validations:
+      required: true

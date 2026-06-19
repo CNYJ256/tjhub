@@ -1,0 +1,24 @@
+name: 失效链接反馈
+description: 反馈 TJHub 中已经失效或信息错误的入口
+title: "失效链接："
+labels: ["content", "stale-link"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: TJHub 页面或条目名称
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 失效链接
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题说明
+      description: 例如无法访问、跳转错误、内容过期、疑似风险页面。
+    validations:
+      required: true

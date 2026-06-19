@@ -1,0 +1,24 @@
+name: 指南内容建议
+description: 建议新增或修改一篇站内指南
+title: "指南建议："
+labels: ["guide"]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: 指南主题
+    validations:
+      required: true
+  - type: textarea
+    id: audience
+    attributes:
+      label: 适用对象
+      description: 例如新生、本科生、研究生、留学生或所有同学。
+    validations:
+      required: true
+  - type: textarea
+    id: content
+    attributes:
+      label: 建议内容
+    validations:
+      required: true
