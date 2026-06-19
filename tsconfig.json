@@ -4,14 +4,15 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "skipLibCheck": true,
     "strict": true,
     "jsx": "preserve",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vitest/importMeta", "node"]
+    "types": ["vitest/importMeta", "node", "@cloudflare/workers-types/2023-07-01"]
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "functions/**/*.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

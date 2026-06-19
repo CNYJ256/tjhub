@@ -24,13 +24,14 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260619.1",
     "@types/markdown-it": "latest",
-    "wrangler": "latest",
     "@types/node": "^25.9.3",
     "@vitejs/plugin-vue": "latest",
     "typescript": "latest",
     "vite": "latest",
     "vitest": "latest",
-    "vue-tsc": "latest"
+    "vue-tsc": "latest",
+    "wrangler": "latest"
   }
 }
