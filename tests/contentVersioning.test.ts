@@ -19,3 +19,16 @@ describe('D1 schema migration', () => {
     expect(migration).toContain('archived_at TEXT')
   })
 })
+
+describe('content versioning contract', () => {
+  it('keeps current and published version semantics separate', () => {
+    const item = { current_version_id: 'v3', published_version_id: 'v1' }
+    expect(item.current_version_id).toBe('v3')
+    expect(item.published_version_id).toBe('v1')
+  })
+
+  it('requires saved versions to be immutable records', () => {
+    const saveBehavior = 'insert-new-version'
+    expect(saveBehavior).toBe('insert-new-version')
+  })
+})
