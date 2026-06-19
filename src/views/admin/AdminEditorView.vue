@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminShell from '../../components/admin/AdminShell.vue'
+import BlockEditor from '../../components/admin/BlockEditor.vue'
 import LinkProjectForm from '../../components/admin/LinkProjectForm.vue'
 import { fetchAdminItem, saveAdminVersion } from '../../services/adminApi'
 
@@ -51,10 +52,8 @@ async function save(payload: Record<string, unknown>) {
       <p v-else-if="error" class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</p>
       <template v-else-if="item">
         <p v-if="message" :class="messageType === 'success' ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'" class="rounded border px-4 py-3 text-sm">{{ message }}</p>
-        <LinkProjectForm v-if="item.type === 'link' || item.type === 'project'" :initial="latestPayload" @save="save" />
-        <div v-else class="rounded border border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-          此内容类型（{{ item.type }}）的编辑器即将支持。
-        </div>
+        <BlockEditor v-if="['page', 'guide', 'banner', 'category'].includes(item?.type)" :initial="latestPayload" @save="save" />
+        <LinkProjectForm v-else :initial="latestPayload" @save="save" />
       </template>
     </template>
   </AdminShell>
