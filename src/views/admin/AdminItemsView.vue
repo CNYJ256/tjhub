@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import AdminShell from '../../components/admin/AdminShell.vue'
 import ContentTable from '../../components/admin/ContentTable.vue'
 import { fetchAdminItems } from '../../services/adminApi'
@@ -10,7 +10,9 @@ const loading = ref(true)
 const error = ref('')
 const items = ref<AdminItemListRow[]>([])
 
-onMounted(async () => {
+async function loadItems() {
+  loading.value = true
+  error.value = ''
   try {
     const response = await fetchAdminItems(props.type)
     items.value = response.items
@@ -19,6 +21,14 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  loadItems()
+})
+
+watch(() => props.type, () => {
+  loadItems()
 })
 </script>
 

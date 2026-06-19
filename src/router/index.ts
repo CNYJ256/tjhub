@@ -16,6 +16,7 @@ export const router = createRouter({
     { path: '/admin/projects', name: 'admin-projects', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'project', title: '项目' } },
     { path: '/admin/categories', name: 'admin-categories', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'category', title: '分类' } },
     { path: '/admin/banners', name: 'admin-banners', component: () => import('../views/admin/AdminItemsView.vue'), props: { type: 'banner', title: '轮播' } },
+    { path: '/admin/items/:id', name: 'admin-item-editor', component: () => import('../views/admin/AdminEditorView.vue') },
     { path: '/guides/:slug', name: 'guide', component: () => import('../views/GuideView.vue') },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') }
   ],
