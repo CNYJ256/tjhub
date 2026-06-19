@@ -1,6 +1,7 @@
 import { requireAdminUser } from '../../../../_shared/access'
 import { errorJson, json, readJson } from '../../../../_shared/json'
 import { newId } from '../../../../_shared/db'
+import { validatePayload } from '../../../../_shared/validationSchemas'
 import type { Env } from '../../../../_shared/types'
 
 interface SaveVersionBody {
@@ -17,8 +18,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const body = await readJson<SaveVersionBody>(request)
   if (!body.title) return errorJson(400, 'validation_error', '标题不能为空。')
 
-  const itemExists = await env.DB.prepare('SELECT id FROM content_items WHERE id = ?').bind(itemId).first()
-  if (!itemExists) return errorJson(404, 'not_found', '内容不存在。')
+  const item = await env.DB.prepare('SELECT type FROM content_items WHERE id = ?').bind(itemId).first<{ type: string }>()
+  if (!item) return errorJson(404, 'not_found', '内容不存在。')
+
+  const validation = validatePayload(item.type, body.payload)
+  if (!validation.ok) return errorJson(400, 'validation_error', validation.message)
 
   const versionId = newId('ver')
 

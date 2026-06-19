@@ -1,6 +1,7 @@
 import { requireAdminUser } from '../../../_shared/access'
 import { errorJson, json, readJson } from '../../../_shared/json'
 import { newId } from '../../../_shared/db'
+import { validatePayload } from '../../../_shared/validationSchemas'
 import type { Env } from '../../../_shared/types'
 
 interface CreateItemBody {
@@ -44,6 +45,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!body.type || !body.slug || !body.title) {
     return errorJson(400, 'validation_error', '类型、slug 和标题不能为空。')
   }
+
+  const validation = validatePayload(body.type, body.payload)
+  if (!validation.ok) return errorJson(400, 'validation_error', validation.message)
 
   const itemId = newId('item')
   const versionId = newId('ver')

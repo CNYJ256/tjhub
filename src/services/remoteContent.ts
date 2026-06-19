@@ -1,13 +1,33 @@
 import { z } from 'zod'
 import type { PublicContentSnapshot } from '../types/content'
 
+const linkItemSchema = z.object({
+  type: z.literal('link'),
+  slug: z.string(),
+  title: z.string(),
+  url: z.string(),
+  description: z.string(),
+  category: z.string(),
+  tags: z.array(z.string()).default([]),
+  aliases: z.array(z.string()).default([]),
+  sourceKind: z.enum(['official', 'student', 'third_party', 'internal']).default('official'),
+  status: z.enum(['active', 'stale', 'unavailable', 'archived']).default('active'),
+  guideSlug: z.string().optional()
+}).passthrough()
+
+const projectItemSchema = z.object({
+  type: z.literal('project'),
+  slug: z.string(),
+  title: z.string()
+}).passthrough()
+
 const snapshotSchema = z.object({
   version: z.number(),
   generatedAt: z.string(),
   pages: z.array(z.any()),
   guides: z.array(z.any()),
-  links: z.array(z.any()),
-  projects: z.array(z.any()),
+  links: z.array(linkItemSchema),
+  projects: z.array(projectItemSchema),
   categories: z.record(z.string(), z.any()),
   banners: z.array(z.any()).default([])
 })
@@ -31,7 +51,7 @@ export async function fetchRemoteContent(timeoutMs = 2000): Promise<PublicConten
     if (!response.ok) {
       throw new Error(`Public content API failed: ${response.status}`)
     }
-    const parsed = snapshotSchema.parse(await response.json()) as PublicContentSnapshot
+    const parsed = snapshotSchema.parse(await response.json()) as unknown as PublicContentSnapshot
     if (snapshotIsEmpty(parsed)) {
       throw new Error('Public content API returned an empty snapshot')
     }

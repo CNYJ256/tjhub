@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import matter from 'gray-matter'
+import { parse as parseYaml } from 'yaml'
 
 const adminEmail = process.env.INITIAL_ADMIN_EMAIL
 if (!adminEmail) {
@@ -56,11 +57,38 @@ const items = markdownSources.map((source) => {
   }
 })
 
+// Import categories from taxonomy
+try {
+  const catYaml = readFileSync('content/taxonomies/categories.yaml', 'utf8')
+  const categories = parseYaml(catYaml)
+  for (const [slug, meta] of Object.entries(categories)) {
+    if (typeof meta !== 'object' || !meta) continue
+    const m = /** @type {Record<string, string>} */ (meta)
+    const title = m.label || slug
+    const desc = m.description || ''
+    const id = `category_${slug}`
+    const versionId = `${id}_v1`
+    const payload = { label: title, description: desc }
+
+    items.push({
+      file: 'content/taxonomies/categories.yaml',
+      id,
+      versionId,
+      type: 'category',
+      slug,
+      title,
+      description: desc,
+      payload
+    })
+  }
+} catch (err) {
+  console.error(`Warning: could not import categories: ${err.message}`)
+}
+
 const sql = [
   `INSERT OR REPLACE INTO users (id, email, name, role, status) VALUES ('user_initial_admin', ${JSON.stringify(adminEmail)}, ${JSON.stringify(adminEmail)}, 'admin', 'active');`,
   ...items.map(contentItemSql),
-  `UPDATE public_revisions SET revision = revision + 1, updated_at = CURRENT_TIMESTAMP WHERE id = 1;`,
-  `-- content/taxonomies/categories.yaml is imported by the implementation's taxonomy importer.`
+  `UPDATE public_revisions SET revision = revision + 1, updated_at = CURRENT_TIMESTAMP WHERE id = 1;`
 ].join('\n\n')
 
 process.stdout.write(sql)

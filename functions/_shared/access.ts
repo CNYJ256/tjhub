@@ -7,6 +7,65 @@ function base64UrlDecode(input: string): string {
   return atob(padded)
 }
 
+interface JwtHeader {
+  alg: string
+  kid: string
+  typ: string
+}
+
+function decodeJwtHeader(token: string): JwtHeader {
+  const [header] = token.split('.')
+  if (!header) throw new Error('Access JWT 格式无效。')
+  return JSON.parse(base64UrlDecode(header)) as JwtHeader
+}
+
+function base64UrlToBytes(input: string): Uint8Array {
+  const normalized = input.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+  const binary = atob(padded)
+  return Uint8Array.from(binary, (c) => c.charCodeAt(0))
+}
+
+async function fetchJwks(teamDomain: string): Promise<Record<string, JsonWebKey>> {
+  const url = `https://${teamDomain}/cdn-cgi/access/certs`
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`JWKS 获取失败: ${response.status}`)
+  const { keys } = await response.json() as { keys: Array<JsonWebKey & { kid: string }> }
+  const map: Record<string, JsonWebKey> = {}
+  for (const key of keys) {
+    if (key.kid) map[key.kid] = key
+  }
+  return map
+}
+
+async function verifyJwtSignature(token: string, env: Env): Promise<boolean> {
+  const [rawHeader, rawPayload, signature] = token.split('.')
+  if (!rawHeader || !rawPayload || !signature) return false
+
+  try {
+    const header = decodeJwtHeader(token)
+    const jwks = await fetchJwks(env.ACCESS_TEAM_DOMAIN)
+    const jwk = jwks[header.kid]
+    if (!jwk) return false
+
+    const key = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+
+    const encoder = new TextEncoder()
+    const data = encoder.encode(`${rawHeader}.${rawPayload}`)
+    const sigBytes = base64UrlToBytes(signature)
+
+    return await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, sigBytes as BufferSource, data)
+  } catch {
+    return false
+  }
+}
+
 export function decodeJwtPayload(token: string): Record<string, unknown> {
   const [, payload] = token.split('.')
   if (!payload) {
@@ -35,6 +94,11 @@ export async function validateAccessJwt(request: Request, env: Env): Promise<Acc
 
   if (!aud.includes(env.ACCESS_AUD)) {
     return errorJson(401, 'unauthorized', 'Access JWT audience 不匹配。')
+  }
+
+  const signatureValid = await verifyJwtSignature(token, env)
+  if (!signatureValid) {
+    return errorJson(401, 'unauthorized', 'Access JWT 签名验证失败。')
   }
 
   return { email, name: typeof payload.name === 'string' ? payload.name : undefined }
