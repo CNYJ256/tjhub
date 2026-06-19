@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PageShell from '../components/layout/PageShell.vue'
 import CollectionList from '../components/collections/CollectionList.vue'
-import { contentIndex } from '../services/content'
+import { contentState } from '../services/contentStore'
 </script>
 
 <template>
@@ -10,7 +10,7 @@ import { contentIndex } from '../services/content'
       <h1 class="text-3xl font-semibold">学生项目</h1>
       <p class="mt-3 text-slate-600">这里展示学生维护的项目和友链，非官方项目会明确标注。</p>
       <div class="mt-8">
-        <CollectionList :entries="contentIndex.projects" />
+        <CollectionList :entries="contentState.index.projects" />
       </div>
     </section>
   </PageShell>

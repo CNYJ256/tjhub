@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import PageShell from '../components/layout/PageShell.vue'
 import ContentRenderer from '../components/content/ContentRenderer.vue'
-import { findGuide } from '../services/content'
+import { findRuntimeGuide } from '../services/contentStore'
 
 const route = useRoute()
-const guide = computed(() => findGuide(String(route.params.slug)))
+const guide = computed(() => findRuntimeGuide(String(route.params.slug)))
 </script>
 
 <template>

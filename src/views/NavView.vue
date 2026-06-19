@@ -5,7 +5,7 @@ import PageShell from '../components/layout/PageShell.vue'
 import SearchInput from '../components/collections/SearchInput.vue'
 import CategoryFilter from '../components/collections/CategoryFilter.vue'
 import CollectionList from '../components/collections/CollectionList.vue'
-import { contentIndex } from '../services/content'
+import { contentState } from '../services/contentStore'
 import { searchLinks } from '../services/search'
 
 const route = useRoute()
@@ -18,14 +18,14 @@ watchEffect(() => {
 })
 
 const categories = computed(() =>
-  [...new Set(contentIndex.links.map((link) => link.category))].map((key) => ({
+  [...new Set(contentState.index.links.map((link) => link.category))].map((key) => ({
     key,
-    label: contentIndex.categories[key]?.label ?? key,
-    description: contentIndex.categories[key]?.description ?? ''
+    label: contentState.index.categories[key]?.label ?? key,
+    description: contentState.index.categories[key]?.description ?? ''
   }))
 )
 const filtered = computed(() => {
-  const searched = searchLinks(contentIndex.links, query.value)
+  const searched = searchLinks(contentState.index.links, query.value)
   return category.value ? searched.filter((link) => link.category === category.value) : searched
 })
 </script>

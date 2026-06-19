@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { contentIndex } from '../../services/content'
+import { contentState } from '../../services/contentStore'
 import CollectionList from '../collections/CollectionList.vue'
 
 const props = defineProps<{
@@ -11,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const entries = computed(() => {
-  const source = props.collection === 'projects' ? contentIndex.projects : contentIndex.links
+  const source = props.collection === 'projects' ? contentState.index.projects : contentState.index.links
 
   const filtered = props.placement
     ? source.filter((entry) => entry.placements.includes(props.placement!))

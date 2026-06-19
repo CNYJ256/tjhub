@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import PageShell from '../components/layout/PageShell.vue'
 import ContentRenderer from '../components/content/ContentRenderer.vue'
-import { findPage } from '../services/content'
+import { findRuntimePage } from '../services/contentStore'
 
-const page = findPage('contribute')
+const page = computed(() => findRuntimePage('contribute'))
 </script>
 
 <template>
