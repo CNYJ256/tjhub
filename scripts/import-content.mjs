@@ -1,11 +1,18 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import matter from 'gray-matter'
+import MarkdownIt from 'markdown-it'
 import { parse as parseYaml } from 'yaml'
 
 const adminEmail = process.env.INITIAL_ADMIN_EMAIL
 if (!adminEmail) {
   throw new Error('INITIAL_ADMIN_EMAIL is required before importing content.')
+}
+
+const markdown = new MarkdownIt({ html: false, linkify: true, typographer: true })
+
+function sqlString(value) {
+  return `'${String(value).replace(/'/g, "''")}'`
 }
 
 function walk(dir) {
@@ -25,11 +32,12 @@ function loadMarkdownFiles(dir) {
 }
 
 function contentItemSql(item) {
+  const payloadJson = JSON.stringify(item.payload)
   return [
     `-- ${item.file}`,
-    `INSERT OR IGNORE INTO content_items (id, type, slug, created_by, updated_by) VALUES ('${item.id}', '${item.type}', '${item.slug}', 'system', 'system');`,
-    `INSERT OR REPLACE INTO content_versions (id, item_id, version_number, status, title, description, payload_json, created_by) VALUES ('${item.versionId}', '${item.id}', 1, 'approved', ${JSON.stringify(item.title)}, ${JSON.stringify(item.description || '')}, ${JSON.stringify(JSON.stringify(item.payload))}, 'system');`,
-    `UPDATE content_items SET current_version_id = '${item.versionId}', published_version_id = '${item.versionId}' WHERE id = '${item.id}';`
+    `INSERT OR IGNORE INTO content_items (id, type, slug, created_by, updated_by) VALUES (${sqlString(item.id)}, ${sqlString(item.type)}, ${sqlString(item.slug)}, 'system', 'system');`,
+    `INSERT OR REPLACE INTO content_versions (id, item_id, version_number, status, title, description, payload_json, created_by) VALUES (${sqlString(item.versionId)}, ${sqlString(item.id)}, 1, 'approved', ${sqlString(item.title)}, ${sqlString(item.description || '')}, ${sqlString(payloadJson)}, 'system');`,
+    `UPDATE content_items SET current_version_id = ${sqlString(item.versionId)}, published_version_id = ${sqlString(item.versionId)} WHERE id = ${sqlString(item.id)};`
   ].join('\n')
 }
 
@@ -44,7 +52,7 @@ const items = markdownSources.map((source) => {
   const type = source.data.type
   const slug = source.data.slug
   const id = `${type}_${slug}`
-  const payload = { ...source.data, body: source.body }
+  const payload = { ...source.data, body: source.body, html: markdown.render(source.body) }
   return {
     file: source.file,
     id,
@@ -86,7 +94,7 @@ try {
 }
 
 const sql = [
-  `INSERT OR REPLACE INTO users (id, email, name, role, status) VALUES ('user_initial_admin', ${JSON.stringify(adminEmail)}, ${JSON.stringify(adminEmail)}, 'admin', 'active');`,
+  `INSERT OR REPLACE INTO users (id, email, name, role, status) VALUES ('user_initial_admin', ${sqlString(adminEmail)}, ${sqlString(adminEmail)}, 'admin', 'active');`,
   ...items.map(contentItemSql),
   `UPDATE public_revisions SET revision = revision + 1, updated_at = CURRENT_TIMESTAMP WHERE id = 1;`
 ].join('\n\n')
