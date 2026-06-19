@@ -41,6 +41,11 @@ watch(() => props.type, () => {
           <p class="mt-1 text-sm text-slate-600">管理内容、版本和审核状态。</p>
         </div>
       </header>
+      <div class="mb-4">
+        <RouterLink :to="`/admin/items/new?type=${type}`" class="inline-flex rounded-md bg-slate-950 px-4 py-2 text-sm text-white hover:bg-slate-800">
+          新建{{ title }}
+        </RouterLink>
+      </div>
       <p v-if="loading" class="text-sm text-slate-600">正在加载...</p>
       <p v-else-if="error" class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</p>
       <ContentTable v-else :items="items" />

@@ -20,6 +20,7 @@ export const router = createRouter({
     { path: '/admin/review', name: 'admin-review', component: () => import('../views/admin/AdminReviewView.vue') },
     { path: '/admin/publish-events', name: 'admin-publish-events', component: () => import('../views/admin/AdminReviewView.vue') },
     { path: '/admin/users', name: 'admin-users', component: () => import('../views/admin/AdminUsersView.vue') },
+    { path: '/admin/items/new', name: 'admin-item-new', component: () => import('../views/admin/AdminNewItemView.vue') },
     { path: '/admin/items/:id', name: 'admin-item-editor', component: () => import('../views/admin/AdminEditorView.vue') },
     { path: '/guides/:slug', name: 'guide', component: () => import('../views/GuideView.vue') },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') }

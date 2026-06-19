@@ -65,6 +65,13 @@ export function rollbackAdminItem(itemId: string, versionId: string, note = '') 
   })
 }
 
+export function createAdminItem(body: { type: string; slug: string; title: string; description?: string; payload: Record<string, unknown> }): Promise<{ ok: true; itemId: string; versionId: string }> {
+  return adminFetch('/api/admin/items', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  })
+}
+
 export async function uploadAdminMedia(file: File, altText: string): Promise<{ ok: true; media: unknown }> {
   const body = new FormData()
   body.set('file', file)
