@@ -81,3 +81,22 @@ npx wrangler pages deploy dist --project-name=tjhub --branch=main
 2. `public/` 目录下的文件（`_redirects`、`robots.txt`）会被原样复制到构建产物
 3. GitHub Actions secrets 只在 GitHub 仓库设置中配置，不要提交到仓库
 4. 若 Cloudflare Pages 项目名不是 `tjhub`，需要同步修改 `.github/workflows/deploy.yml`
+
+## Phase 2 Cloudflare Bindings
+
+Phase 2 requires these Cloudflare bindings on the Pages project:
+
+- D1 binding: `DB`
+- R2 binding: `MEDIA_BUCKET`
+- Environment variable: `MEDIA_PUBLIC_BASE_URL`
+- Environment variable: `ACCESS_AUD`
+- Environment variable: `ACCESS_TEAM_DOMAIN`
+- Import/bootstrap environment variable: `INITIAL_ADMIN_EMAIL`
+
+Cloudflare Access must protect:
+
+- `/admin`
+- `/admin/*`
+- `/api/admin/*`
+
+Public APIs under `/api/public/*` remain public and return only published approved content.
