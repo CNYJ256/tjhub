@@ -9,6 +9,8 @@ const route = useRoute()
 const itemId = String(route.params.id)
 const loading = ref(true)
 const error = ref('')
+const message = ref('')
+const messageType = ref<'success' | 'error'>('success')
 const item = ref<any>(null)
 const latestPayload = ref<Record<string, unknown>>({})
 
@@ -26,11 +28,19 @@ onMounted(async () => {
 })
 
 async function save(payload: Record<string, unknown>) {
-  await saveAdminVersion(itemId, {
-    title: String(payload.title || '未命名内容'),
-    description: String(payload.description || ''),
-    payload
-  })
+  message.value = ''
+  try {
+    await saveAdminVersion(itemId, {
+      title: String(payload.title || '未命名内容'),
+      description: String(payload.description || ''),
+      payload
+    })
+    message.value = '保存成功。'
+    messageType.value = 'success'
+  } catch (err) {
+    message.value = err instanceof Error ? err.message : '保存失败。'
+    messageType.value = 'error'
+  }
 }
 </script>
 
@@ -40,6 +50,7 @@ async function save(payload: Record<string, unknown>) {
       <p v-if="loading" class="text-sm text-slate-600">正在加载...</p>
       <p v-else-if="error" class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</p>
       <template v-else-if="item">
+        <p v-if="message" :class="messageType === 'success' ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'" class="rounded border px-4 py-3 text-sm">{{ message }}</p>
         <LinkProjectForm v-if="item.type === 'link' || item.type === 'project'" :initial="latestPayload" @save="save" />
         <div v-else class="rounded border border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
           此内容类型（{{ item.type }}）的编辑器即将支持。

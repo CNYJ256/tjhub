@@ -16,6 +16,7 @@ const form = reactive({
   status: String(props.initial?.status || 'active'),
   featured: Boolean(props.initial?.featured || false),
   placements: Array.isArray(props.initial?.placements) ? (props.initial?.placements as string[]).join(', ') : '',
+  audience: Array.isArray(props.initial?.audience) ? (props.initial?.audience as string[]).join(', ') : 'all',
   priority: Number(props.initial?.priority || 0),
   guideSlug: String(props.initial?.guideSlug || '')
 })
@@ -30,6 +31,7 @@ function submit() {
     tags: splitList(form.tags),
     aliases: splitList(form.aliases),
     placements: splitList(form.placements),
+    audience: splitList(form.audience),
     priority: Number(form.priority)
   })
 }
@@ -79,6 +81,9 @@ function submit() {
     </label>
     <label class="block text-sm">展示位置（用逗号分隔）
       <input v-model="form.placements" class="mt-1 w-full border px-3 py-2 rounded" />
+    </label>
+    <label class="block text-sm">受众（用逗号分隔）
+      <input v-model="form.audience" class="mt-1 w-full border px-3 py-2 rounded" />
     </label>
     <label class="block text-sm">优先级
       <input v-model.number="form.priority" type="number" class="mt-1 w-full border px-3 py-2 rounded" />
