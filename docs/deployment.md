@@ -24,6 +24,7 @@
 - 正式域名：`tjhub.cc`
 - `www.tjhub.cc` 通过 Cloudflare Redirect Rules 301 跳转到 `tjhub.cc`
 - GitHub Actions 会在生产部署后检查并绑定 Pages 自定义域名 `tjhub.cc`
+- 绑定后会确保 Cloudflare DNS 中存在 apex CNAME：`tjhub.cc` -> `tjhub.pages.dev`
 - 首次绑定后，Cloudflare 可能需要一段时间完成 DNS 验证和证书签发；此时域名状态可能短暂显示为 `pending` 或 `initializing`
 
 ## 构建产物
