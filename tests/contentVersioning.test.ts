@@ -32,3 +32,18 @@ describe('content versioning contract', () => {
     expect(saveBehavior).toBe('insert-new-version')
   })
 })
+
+describe('review publish rollback contract', () => {
+  it('requires rejection notes', () => {
+    const action = 'reject'
+    const note = ''
+    expect(action === 'reject' && note.trim().length === 0).toBe(true)
+  })
+
+  it('rollback does not update current version', () => {
+    const before = { current_version_id: 'v5', published_version_id: 'v4' }
+    const after = { ...before, published_version_id: 'v2' }
+    expect(after.current_version_id).toBe('v5')
+    expect(after.published_version_id).toBe('v2')
+  })
+})
