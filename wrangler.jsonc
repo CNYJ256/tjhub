@@ -17,8 +17,6 @@
     }
   ],
   "vars": {
-    "MEDIA_PUBLIC_BASE_URL": "https://media.tjhub.cc",
-    "ACCESS_AUD": "<YOUR_ACCESS_AUD>",
-    "ACCESS_TEAM_DOMAIN": "<YOUR_ACCESS_TEAM_DOMAIN>"
+    "MEDIA_PUBLIC_BASE_URL": "https://media.tjhub.cc"
   }
 }
