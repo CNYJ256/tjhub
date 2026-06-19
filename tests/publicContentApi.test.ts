@@ -27,3 +27,19 @@ describe('public content serialization contract', () => {
     expect(block.media.url).toMatch(/^https:\/\/media\.tjhub\.cc\//)
   })
 })
+
+import { groupPublicItems } from '../functions/_shared/contentSerializers'
+
+describe('groupPublicItems', () => {
+  it('returns a valid empty snapshot for empty rows', () => {
+    const snapshot = groupPublicItems([], 0)
+    expect(snapshot.version).toBe(0)
+    expect(snapshot.pages).toHaveLength(0)
+    expect(snapshot.links).toHaveLength(0)
+    expect(snapshot.projects).toHaveLength(0)
+    expect(snapshot.guides).toHaveLength(0)
+    expect(snapshot.banners).toHaveLength(0)
+    expect(Object.keys(snapshot.categories)).toHaveLength(0)
+    expect(snapshot.generatedAt).toBeTruthy()
+  })
+})

@@ -82,9 +82,11 @@ export interface ContentIndex {
   categories: Record<string, CategoryMeta>
 }
 
-export interface BannerEntry extends BaseContent {
+export interface BannerEntry {
   type: 'banner'
+  title: string
   description: string
+  slug: string
   imageUrl?: string
   primaryLink?: string
   secondaryLink?: string
