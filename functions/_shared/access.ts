@@ -12,7 +12,11 @@ export function decodeJwtPayload(token: string): Record<string, unknown> {
   if (!payload) {
     throw new Error('Access JWT 格式无效。')
   }
-  return JSON.parse(base64UrlDecode(payload)) as Record<string, unknown>
+  try {
+    return JSON.parse(base64UrlDecode(payload)) as Record<string, unknown>
+  } catch {
+    throw new Error('Access JWT 载荷解析失败。')
+  }
 }
 
 export async function validateAccessJwt(request: Request, env: Env): Promise<AccessIdentity | Response> {
