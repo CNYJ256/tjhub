@@ -1,0 +1,30 @@
+{
+  "name": "tjhub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "latest",
+    "gray-matter": "latest",
+    "markdown-it": "latest",
+    "tailwindcss": "latest",
+    "vue": "latest",
+    "vue-router": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "latest",
+    "@vitejs/plugin-vue": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest",
+    "vue-tsc": "latest"
+  }
+}
