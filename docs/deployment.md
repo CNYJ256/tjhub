@@ -23,9 +23,7 @@
 
 - 正式域名：`tjhub.cc`
 - `www.tjhub.cc` 通过 Cloudflare Redirect Rules 301 跳转到 `tjhub.cc`
-- GitHub Actions 会在生产部署后检查并绑定 Pages 自定义域名 `tjhub.cc`
-- 绑定后会确保 Cloudflare DNS 中存在 apex CNAME：`tjhub.cc` -> `tjhub.pages.dev`
-- 首次绑定后，Cloudflare 可能需要一段时间完成 DNS 验证和证书签发；此时域名状态可能短暂显示为 `pending` 或 `initializing`
+- 自定义域名和 DNS 记录在 Cloudflare 控制台维护，不由 GitHub Actions 修改
 
 ## 构建产物
 
@@ -43,7 +41,6 @@
 - PR：运行类型检查、测试和构建，不部署
 - `main` 分支推送：运行类型检查、测试、构建，通过后部署 `dist/` 到 Cloudflare Pages
 - 首次部署会尝试创建 Cloudflare Pages 项目 `tjhub`，若项目已存在则继续执行部署
-- 生产部署后会通过 Cloudflare Pages Domains API 绑定 `tjhub.cc`，若已绑定则跳过
 
 工作流文件：
 
@@ -64,7 +61,7 @@ CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 ```
 
-`CLOUDFLARE_API_TOKEN` 需要至少具备 Cloudflare Pages Edit 权限。若需要由 workflow 首次创建 Pages project，该 token 也必须允许创建 Pages 项目。若需要自动绑定 apex 域名并让 Cloudflare 自动写入 DNS 记录，`tjhub.cc` 需要作为同一 Cloudflare 账号下的 zone，并且 token 需要具备相应的 zone/DNS 权限。
+`CLOUDFLARE_API_TOKEN` 需要至少具备 Cloudflare Pages Edit 权限。若需要由 workflow 首次创建 Pages project，该 token 也必须允许创建 Pages 项目。GitHub Actions 不需要 DNS 写入权限。
 
 ## 手动验证部署命令
 
