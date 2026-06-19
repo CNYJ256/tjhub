@@ -1,10 +1,10 @@
-# TJHub Phase 2 Workers, D1, and Admin Design
+# TJHub Phase 2 Pages Functions, D1, and Admin Design
 
 Date: 2026-06-19
 
 ## Goal
 
-Phase 2 turns TJHub from a static-first campus navigation site into a content-managed site backed by Cloudflare Pages Functions, D1, and R2.
+Phase 2 turns TJHub from a static-first campus navigation site into a content-managed site backed by Cloudflare Pages, Pages Functions running on the Workers runtime, D1, and R2.
 
 The public site should read live approved content from D1 at runtime while keeping the existing Markdown/YAML content as a fallback. The admin area should let non-technical editors create and maintain links, guides, projects, pages, homepage blocks, banners, categories, and media without using GitHub or editing code.
 
@@ -13,7 +13,7 @@ All public and admin user-facing interface text must be Simplified Chinese.
 ## Confirmed Decisions
 
 - Architecture approach: gradual dynamic content layer.
-- Public content source: Workers/Pages Functions API backed by D1.
+- Public content source: Pages Functions API backed by D1.
 - Fallback source: current `content/**/*.md` Markdown/YAML files.
 - Admin authentication: Cloudflare Access.
 - TJHub authorization: D1 roles.
@@ -21,7 +21,7 @@ All public and admin user-facing interface text must be Simplified Chinese.
 - Editor model: structured block editor, not a freeform page builder.
 - Media storage: Cloudflare R2.
 - Review workflow: editors submit for review, administrators approve and publish.
-- Deployment topology: Cloudflare Pages plus Pages Functions in the same project.
+- Deployment topology: Cloudflare Pages plus Pages Functions in the same project, running on the Workers runtime.
 - Content versioning: every save creates a version; public API reads the latest published approved version.
 - Public API output: normalized JSON close to the existing frontend content model.
 
@@ -42,7 +42,7 @@ Phase 2 should not include:
 
 ## Architecture
 
-TJHub remains a Cloudflare Pages project hosting the Vue/Vite frontend. Pages Functions are added to the same project for API routes.
+TJHub remains a Cloudflare Pages project hosting the Vue/Vite frontend. Pages Functions are added to the same Pages project for API routes. Phase 2 does not create a separate standalone Worker project.
 
 Public content loading order:
 
@@ -57,14 +57,19 @@ Admin routes:
 
 - `/admin` is the Vue admin application.
 - `/api/admin/*` is the admin API.
-- Cloudflare Access protects `/admin` and `/api/admin/*`.
-- TJHub reads the Cloudflare Access identity and maps it to a D1 user role.
+- Cloudflare Access protects `/admin`, `/admin/*`, and `/api/admin/*`.
+- Admin API handlers must validate the Cloudflare Access JWT, such as the `Cf-Access-Jwt-Assertion` token, before trusting any Access identity fields.
+- After JWT validation, TJHub maps the Access identity email to a D1 user role.
+- Disabled D1 users may pass Cloudflare Access, but they must receive no admin API permissions.
 
 Media:
 
 - Images, banners, guide illustrations, and attachments are stored in R2.
 - D1 stores file metadata and references.
-- Content payloads refer to media by `mediaId` or a normalized URL.
+- Admin payloads may refer to media by `mediaId`.
+- Public payloads must include renderable media URLs.
+- Phase 2 uses an R2 custom domain for public media, recommended as `media.tjhub.cc`.
+- Public media URLs should be normalized as `https://media.tjhub.cc/<r2_key>`.
 
 ## Data Model
 
@@ -86,6 +91,8 @@ Fields:
 
 Cloudflare Access decides whether a person can enter the admin area. D1 roles decide which TJHub actions they can perform.
 
+The initial administrator must be seeded by migration or import tooling from an environment variable such as `INITIAL_ADMIN_EMAIL`. Without an active seeded admin user, authenticated Access users can open the protected admin shell but must receive 403 responses from admin APIs.
+
 ### `content_items`
 
 Stores stable content identity.
@@ -104,6 +111,14 @@ Fields:
 - `archived_at`
 
 The `slug` must be stable and unique per type.
+
+Categories are content items with `type = category`. Public content payloads reference categories by stable category slug, not title. Category titles may change without requiring link or project payload rewrites.
+
+`current_version_id` points to the latest saved version for the item, regardless of review status.
+
+`published_version_id` points to the approved version currently exposed by public APIs.
+
+Publishing updates `published_version_id`. Rollback updates `published_version_id` to an older approved version and records a `publish_events` row. Rollback does not create a new `content_versions` row, and it does not change `current_version_id`.
 
 ### `content_versions`
 
@@ -132,10 +147,13 @@ Fields:
 - Project fields such as `url`, `maintainers`, and metadata.
 - Category and banner fields.
 
-Public APIs only expose versions that are both:
+The `content_versions.status` field is the review/version state. The `payload_json.status` field retains the existing public content-specific status, such as a link availability status. In admin API DTOs, version state should be exposed as `versionStatus`; content-specific status should be exposed as `entryStatus` where disambiguation is needed.
 
-- `status = approved`
-- referenced by `content_items.published_version_id`
+Public APIs only expose rows that satisfy all of these conditions:
+
+- `content_items.archived_at IS NULL`
+- `content_versions.status = approved`
+- `content_items.published_version_id = content_versions.id`
 
 ### `media_assets`
 
@@ -156,6 +174,8 @@ Fields:
 - `usage_count`
 
 Binary data never goes into D1.
+
+`usage_count` is derived during media library queries from saved content payload references. It is not authoritative and should not be used for permissions or deletion safety without a fresh reference scan.
 
 ### `review_events`
 
@@ -204,6 +224,10 @@ Returns the full public content snapshot needed by the frontend:
 
 This is the primary Phase 2 read endpoint.
 
+`version` is a monotonically increasing public revision value. Phase 2 should store it as the latest effective `publish_events.id` or an equivalent monotonically increasing `public_revision`. Publishing and rollback both change this value.
+
+The full snapshot is considered empty only if it has no pages, no links, no projects, no categories, and no banners. A legitimately empty single collection must not trigger global Markdown fallback.
+
 ### `GET /api/public/pages/:slug`
 
 Returns a single public page by slug.
@@ -218,7 +242,6 @@ Supported query parameters:
 
 - `category`
 - `placement`
-- `q`
 
 Phase 2 keeps search execution on the frontend using existing search helpers. The API only returns filterable collection data.
 
@@ -226,17 +249,30 @@ Phase 2 keeps search execution on the frontend using existing search helpers. Th
 
 Phase 2 does not implement this endpoint by default.
 
-R2 assets should be served through a controlled public URL or custom domain. Content payloads should reference that URL. If private media proxying becomes necessary, it should be specified as a separate post-Phase-2 change.
+R2 assets should be served through the Phase 2 media custom domain, recommended as `media.tjhub.cc`. Public content payloads should reference renderable URLs from that domain. If private media proxying becomes necessary, it should be specified as a separate post-Phase-2 change.
 
 ## Admin API
 
 ### `GET /api/admin/me`
 
-Reads Cloudflare Access identity and returns the current TJHub user and role.
+Validates the Cloudflare Access JWT, reads the Access identity, and returns the current TJHub user and role.
+
+If the Access identity is valid but no active D1 user exists, the API returns 403 with a Chinese error message. It must not auto-grant editor or admin permissions.
 
 ### `GET /api/admin/items`
 
 Lists content items by type, status, keyword, and owner filters.
+
+Supported status filter values:
+
+- `draft`: items whose `current_version_id` points to a draft version.
+- `pending`: items with at least one pending version.
+- `approved`: items with at least one approved version.
+- `rejected`: items whose `current_version_id` points to a rejected version.
+- `published`: items whose `published_version_id` is not null and whose item is not archived.
+- `archived`: items whose `archived_at` is not null.
+
+Admin API responses should expose these as filter states, not overload the public link `status` field.
 
 ### `POST /api/admin/items`
 
@@ -268,6 +304,8 @@ Publishes an approved version by updating `published_version_id`.
 
 Rolls back to an older approved version.
 
+Rollback updates `published_version_id`, writes `publish_events`, and leaves `current_version_id` unchanged.
+
 ### `POST /api/admin/media/upload`
 
 Uploads a file to R2 and creates a `media_assets` row.
@@ -284,6 +322,8 @@ Cache-Control: public, max-age=60, stale-while-revalidate=300
 
 The content snapshot includes a `version` field. Publishing or rollback updates the effective public content revision.
 
+Publishing is not strongly real-time for all visitors. With the default cache policy, users can see cached content briefly after publish or rollback. Phase 2 does not require cache purge or revisioned URLs for immediate invalidation.
+
 Frontend fallback rules:
 
 - Request the public API with a short timeout, such as 1500-2500ms.
@@ -293,6 +333,63 @@ Frontend fallback rules:
 - Fall back to Markdown/YAML content if public content is empty.
 
 Admin APIs do not fall back to Markdown. Admin errors must display clear Simplified Chinese messages.
+
+## Content Relationships
+
+### Categories
+
+Links and projects reference categories by stable category slug.
+
+Category content items own:
+
+- slug
+- label
+- description
+- ordering metadata
+- visibility and review state through versions
+
+Changing a category label must not require changing link or project payloads.
+
+### Banners and Carousel Blocks
+
+`banner` is an independent content item.
+
+`bannerCarousel` is a page block that references one or more published banner items by banner slug or id. Banner data should not be duplicated inline inside page blocks unless it is only fallback Markdown content imported from Phase 1.
+
+Published homepage content should render the carousel by resolving the `bannerCarousel` block references against published banner items.
+
+### Media
+
+Admin payloads may keep `mediaId` references.
+
+Public serializers must resolve media references before responding. Public payloads must either:
+
+- include a renderable `url` for each media reference, or
+- include a `mediaAssets` map from `mediaId` to renderable public URL in the same response.
+
+Phase 2 should prefer direct renderable URLs in block and content payloads.
+
+The canonical Phase 2 public media URL source is the R2 custom domain, recommended as `media.tjhub.cc`.
+
+## Bootstrap
+
+The first administrator is created by migration/import tooling.
+
+Required bootstrap behavior:
+
+- Read `INITIAL_ADMIN_EMAIL` from the environment used to run migrations or import.
+- Insert or update a `users` row for that email.
+- Set `role = admin`.
+- Set `status = active`.
+- Do not grant admin to unknown Access users automatically.
+
+If `INITIAL_ADMIN_EMAIL` is missing, migrations may still create schema, but import/admin bootstrap must fail with a clear error before production admin use.
+
+Disabled users:
+
+- May still pass Cloudflare Access if the Access policy allows their identity.
+- Must receive 403 from `/api/admin/*`.
+- Must see no privileged admin actions in the frontend after `/api/admin/me` returns disabled or forbidden.
 
 ## Admin UI
 
@@ -426,6 +523,8 @@ Mapping:
 - `content/collections/links/**/*.md` -> `link`
 - `content/collections/projects/*.md` -> `project`
 - `content/taxonomies/categories.yaml` -> `category`
+- `content/pages/home.md` blocks -> homepage page versions
+- existing `bannerCarousel` block fallback data -> `banner` items when banner data is present
 
 Imported content should:
 
@@ -434,6 +533,8 @@ Imported content should:
 - Mark initial versions as `approved`.
 - Set `published_version_id` to the imported approved version.
 - Preserve Markdown body in `payload_json.body` or a markdown block.
+- Preserve page blocks from frontmatter, including homepage blocks.
+- Convert any existing inline banner metadata into published `banner` content items when the source data contains enough title/link/ordering data.
 
 Markdown files remain in the repository as fallback content and an audit baseline.
 
@@ -445,7 +546,9 @@ New Cloudflare bindings:
 
 - D1 database for content and admin data.
 - R2 bucket for media.
-- Cloudflare Access policy for `/admin` and `/api/admin/*`.
+- Cloudflare Access policy for `/admin`, `/admin/*`, and `/api/admin/*`.
+
+Cloudflare Access configuration must protect both the base admin path and nested frontend routes. Static assets shared by the public app can remain public, but admin routes and admin APIs must not expose admin data without Access and JWT validation.
 
 Pages Functions should live in the existing repository and deploy through the existing GitHub Actions Pages workflow.
 
