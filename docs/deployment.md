@@ -39,6 +39,7 @@
 
 - PR：运行类型检查、测试和构建，不部署
 - `main` 分支推送：运行类型检查、测试、构建，通过后部署 `dist/` 到 Cloudflare Pages
+- 首次部署会尝试创建 Cloudflare Pages 项目 `tjhub`，若项目已存在则继续执行部署
 
 工作流文件：
 
@@ -59,7 +60,7 @@ CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 ```
 
-`CLOUDFLARE_API_TOKEN` 需要至少具备 Cloudflare Pages Edit 权限。
+`CLOUDFLARE_API_TOKEN` 需要至少具备 Cloudflare Pages Edit 权限。若需要由 workflow 首次创建 Pages project，该 token 也必须允许创建 Pages 项目。
 
 ## 手动验证部署命令
 
@@ -67,6 +68,7 @@ CLOUDFLARE_API_TOKEN
 
 ```powershell
 npm run build
+npx wrangler@latest pages project create tjhub --production-branch=main
 npx wrangler pages deploy dist --project-name=tjhub --branch=main
 ```
 
