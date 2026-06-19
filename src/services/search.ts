@@ -1,4 +1,5 @@
 import type { LinkEntry, ProjectEntry } from '../types/content'
+import { contentIndex } from './content'
 
 type SearchableEntry = LinkEntry | ProjectEntry
 
@@ -7,7 +8,7 @@ function normalize(value: string): string {
 }
 
 function haystack(entry: SearchableEntry): string {
-  return [
+  const parts = [
     entry.title,
     entry.description,
     entry.category,
@@ -15,8 +16,15 @@ function haystack(entry: SearchableEntry): string {
     ...entry.aliases,
     entry.body
   ]
-    .join(' ')
-    .toLowerCase()
+
+  if ('guideSlug' in entry && entry.guideSlug) {
+    const guide = contentIndex.guides.find(g => g.slug === entry.guideSlug)
+    if (guide) {
+      parts.push(guide.title)
+    }
+  }
+
+  return parts.join(' ').toLowerCase()
 }
 
 export function searchEntries<T extends SearchableEntry>(entries: T[], query: string): T[] {

@@ -2,6 +2,7 @@
 import type { PageBlock } from '../../types/content'
 import HeroBlock from './HeroBlock.vue'
 import BannerBlock from './BannerBlock.vue'
+import CollectionPreviewBlock from './CollectionPreviewBlock.vue'
 
 defineProps<{ block: PageBlock }>()
 </script>
@@ -9,4 +10,5 @@ defineProps<{ block: PageBlock }>()
 <template>
   <HeroBlock v-if="block.type === 'hero'" :title="block.title" :description="block.description" />
   <BannerBlock v-else-if="block.type === 'banner'" :title="block.title" :description="block.description" />
+  <CollectionPreviewBlock v-else-if="block.type === 'collectionPreview'" :title="block.title" :collection="block.collection" :placement="block.placement" :limit="block.limit" />
 </template>
