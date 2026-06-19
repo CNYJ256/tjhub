@@ -20,6 +20,7 @@ Phase 1 should ship a lightweight, trustworthy, static-first campus navigation s
 - Admin route in Phase 1: reserved entrance only. No login, database, real editor, or submission API yet.
 - Public rendering model: shared content renderer and shared collection renderer.
 - MVP scope: standard MVP with freshman guide included as a first-class page or section.
+- All user-facing frontend interface text must be displayed in Simplified Chinese. Internal code identifiers may remain English.
 
 ## Phase 1 Pages
 
@@ -88,6 +89,18 @@ Phase 1 behavior:
 
 The code should still keep a clear admin boundary through route, layout, and view files so future Workers + D1 admin work can attach cleanly.
 
+The admin placeholder must include a page-level `noindex,nofollow` robots meta tag in addition to the site-wide `robots.txt` rule.
+
+### `/guides/:slug`
+
+Internal guide detail page.
+
+This route renders guide content referenced by link entries through `guideSlug`. It should use the same content renderer as other page content and should not create a separate hard-coded guide layout unless a future requirement proves it necessary.
+
+### Project Detail Route
+
+Phase 1 does not require `/projects/:slug`. Project cards may link directly to external project URLs. If a project needs long-form internal documentation later, it can be represented as a guide or future project detail route after the MVP is stable.
+
 ## Navigation Bar
 
 Desktop nav:
@@ -115,7 +128,7 @@ Mobile nav:
 
 ## Homepage Banner
 
-The homepage uses a configurable carousel banner.
+The homepage uses a configurable static banner area. The banner data model should support multiple entries, but carousel behavior is optional in Phase 1 and must not block MVP release.
 
 Banner content should be data-driven. It can promote:
 
@@ -134,7 +147,7 @@ The banner should support:
 - Optional secondary link.
 - Visibility and ordering metadata.
 
-Phase 1 can use local images or static assets. Long term, editor-uploaded banner images should live in Cloudflare R2.
+Phase 1 can render a single selected banner or a simple manual carousel if implementation cost stays low. Local images or static assets are acceptable. Long term, editor-uploaded banner images should live in Cloudflare R2.
 
 ## Navigation Card Interaction
 
@@ -210,6 +223,7 @@ url: https://example.com
 description: 常用校园事务办理入口。
 category: official
 tags: [官方, 办事, 校园服务]
+aliases: [一网通办, 网上办事大厅, service portal]
 sourceKind: official
 official: true
 featured: true
@@ -238,6 +252,7 @@ Core fields:
 - `description`: short summary for cards and search.
 - `category`: primary category.
 - `tags`: searchable labels.
+- `aliases`: common Chinese names, abbreviations, English names, and old names for search.
 - `sourceKind`: `official`, `student`, `third_party`, or `internal`.
 - `official`: boolean shortcut for official entries.
 - `featured`: whether it can appear in curated areas.
@@ -285,6 +300,32 @@ lastCheckedAt: 2026-06-19
 ## Page And Block Model
 
 Public pages should use a shared renderer.
+
+Example `content/pages/home.md`:
+
+```md
+---
+type: page
+title: TJHub
+slug: home
+visibility: public
+reviewStatus: approved
+blocks:
+  - type: hero
+    title: TJHub
+    description: 同济学生常用信息入口
+  - type: bannerCarousel
+    source: banners
+  - type: collectionPreview
+    collection: links
+    placement: home
+    limit: 8
+---
+
+TJHub 是面向同济学生的非官方校园信息入口。
+```
+
+Page frontmatter owns page-level metadata and block ordering. Markdown body owns fallback long-form page copy. Vue components must consume this normalized page model instead of hard-coding homepage content.
 
 Renderer structure:
 
@@ -360,6 +401,37 @@ src/
 
 Content loading should be isolated behind `src/services/content` or equivalent helpers so future API-backed data can replace static file loading without rewriting Vue components.
 
+## Markdown Loading And Validation
+
+Phase 1 content must be loaded at build time through Vite-compatible static imports.
+
+Required implementation constraints:
+
+- Use `import.meta.glob` to load local Markdown files.
+- Use `gray-matter` or an equivalent frontmatter parser.
+- Use `markdown-it`, `marked`, or an equivalent Markdown renderer.
+- Normalize all content through `src/services/content.ts`.
+- Vue components must not hard-code content lists directly.
+- Public rendering must consume normalized content from the content service.
+
+All frontmatter must be validated before rendering.
+
+Recommended validation layer:
+
+- Use Zod or equivalent schema validation.
+- Exclude content that is not `visibility: public` and `reviewStatus: approved`.
+- Log invalid content during development.
+- Treat unknown enum values as invalid.
+
+Required enum values:
+
+```ts
+type SourceKind = 'official' | 'student' | 'third_party' | 'internal'
+type EntryStatus = 'active' | 'stale' | 'unavailable' | 'archived'
+type Visibility = 'public' | 'hidden' | 'draft'
+type ReviewStatus = 'draft' | 'pending' | 'approved' | 'rejected'
+```
+
 ## Search And Filtering
 
 Phase 1 search is local and static.
@@ -370,8 +442,11 @@ It should search:
 - Description.
 - Tags.
 - Category label.
+- Aliases.
 - Markdown excerpt.
 - Guide title when available.
+
+Every link may include `aliases: []` for common alternative names, abbreviations, English names, and old names. Search must include aliases because students may search for terms such as `一网通办`, `选课`, `邮箱`, `vpn`, `图书馆`, `canvas`, `统一认证`, and `教务系统` instead of the exact official title.
 
 Filtering:
 
@@ -417,6 +492,23 @@ Suggested redirect:
 ```text
 https://www.tjhub.cc/* -> https://tjhub.cc/$1
 ```
+
+## Required Routes
+
+Phase 1 must define these public routes:
+
+- `/`
+- `/nav`
+- `/freshman`
+- `/projects`
+- `/contribute`
+- `/about`
+- `/admin`
+- `/guides/:slug`
+
+The `/guides/:slug` route renders internal guide content associated with link entries through `guideSlug`.
+
+All public user-facing labels, buttons, navigation items, empty states, notices, cards, metadata badges, and error messages must be written in Simplified Chinese.
 
 ## Future Cloudflare Architecture
 
@@ -532,6 +624,17 @@ README should include:
 - Disclaimer.
 - License.
 
+## MVP Launch Content Minimum
+
+Phase 1 should not launch as an empty framework. Initial content should include at least:
+
+- 15 official campus links.
+- 8 common tools.
+- 5 study/course-related entries.
+- 5 campus life entries.
+- 3 freshman guide sections.
+- 3 student project or friendly link entries.
+
 ## Disclaimer And Privacy
 
 Use the disclaimer in the footer, about page, and README:
@@ -553,6 +656,12 @@ User-agent: *
 Disallow: /admin
 Allow: /
 Sitemap: https://tjhub.cc/sitemap.xml
+```
+
+The `/admin` placeholder page must also render:
+
+```html
+<meta name="robots" content="noindex,nofollow">
 ```
 
 ## Non-Goals

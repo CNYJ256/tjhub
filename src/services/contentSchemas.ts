@@ -5,6 +5,8 @@ export const entryStatusSchema = z.enum(['active', 'stale', 'unavailable', 'arch
 export const visibilitySchema = z.enum(['public', 'hidden', 'draft'])
 export const reviewStatusSchema = z.enum(['draft', 'pending', 'approved', 'rejected'])
 
+const dateField = z.union([z.string(), z.date()]).transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : String(v)))
+
 const pageBlockSchema = z.object({
   type: z.string().min(1),
   title: z.string().optional(),
@@ -43,9 +45,9 @@ export const linkSchema = z.object({
   visibility: visibilitySchema.default('public'),
   reviewStatus: reviewStatusSchema.default('approved'),
   contributors: z.array(z.string()).default([]),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-  lastCheckedAt: z.string().optional(),
+  createdAt: dateField.optional(),
+  updatedAt: dateField.optional(),
+  lastCheckedAt: dateField.optional(),
   guideSlug: z.string().optional()
 })
 
@@ -68,5 +70,5 @@ export const projectSchema = z.object({
   reviewStatus: reviewStatusSchema.default('approved'),
   maintainers: z.array(z.string()).default([]),
   contributors: z.array(z.string()).default([]),
-  lastCheckedAt: z.string().optional()
+  lastCheckedAt: dateField.optional()
 })

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "latest",
+    "buffer": "^6.0.3",
     "gray-matter": "latest",
     "markdown-it": "latest",
     "tailwindcss": "latest",

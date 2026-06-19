@@ -4,6 +4,14 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
+  resolve: {
+    alias: {
+      buffer: 'buffer'
+    }
+  },
+  optimizeDeps: {
+    include: ['buffer']
+  },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts']
