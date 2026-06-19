@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "vue-tsc --noEmit",
+    "content:import:sql": "node scripts/import-content.mjs",
     "cf:types": "wrangler types src/worker-configuration.d.ts",
     "d1:migrate:local": "wrangler d1 migrations apply tjhub-content --local",
     "d1:migrate:remote": "wrangler d1 migrations apply tjhub-content --remote"
