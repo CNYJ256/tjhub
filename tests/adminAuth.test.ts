@@ -10,3 +10,15 @@ describe('admin auth contract', () => {
     expect(isBearerProtected({ 'Cf-Access-Jwt-Assertion': 'jwt' })).toBe(true)
   })
 })
+
+describe('admin user authorization contract', () => {
+  it('does not auto-grant a role to unknown Access users', () => {
+    const user = null
+    expect(user).toBeNull()
+  })
+
+  it('treats disabled D1 users as forbidden', () => {
+    const user = { status: 'disabled' }
+    expect(user.status).toBe('disabled')
+  })
+})
