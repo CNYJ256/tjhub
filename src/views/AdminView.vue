@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import PageShell from '../components/layout/PageShell.vue'
-import ContentRenderer from '../components/content/ContentRenderer.vue'
-import { findPage } from '../services/content'
+import AdminShell from '../components/admin/AdminShell.vue'
 
-const page = findPage('admin')
 let meta: HTMLMetaElement | undefined
 
 onMounted(() => {
@@ -20,8 +17,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <PageShell>
-    <ContentRenderer v-if="page" :page="page" />
-    <section v-else class="mx-auto max-w-3xl px-4 py-24">管理页面暂不可用。</section>
-  </PageShell>
+  <AdminShell>
+    <template #default>
+      <section>
+        <h1 class="text-2xl font-semibold">仪表盘</h1>
+        <p class="mt-2 text-sm text-slate-600">查看内容状态、待审核事项和最近发布记录。</p>
+      </section>
+    </template>
+  </AdminShell>
 </template>
