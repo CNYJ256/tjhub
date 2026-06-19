@@ -28,3 +28,18 @@ export function fetchAdminItems(type?: string, status?: string): Promise<{ ok: t
   const query = params.toString()
   return adminFetch(`/api/admin/items${query ? `?${query}` : ''}`)
 }
+
+export function fetchAdminItem(id: string): Promise<{ ok: true; item: unknown; versions: unknown[]; reviewEvents: unknown[]; publishEvents: unknown[] }> {
+  return adminFetch(`/api/admin/items/${id}`)
+}
+
+export function saveAdminVersion(id: string, body: { title: string; description?: string; payload: Record<string, unknown> }) {
+  return adminFetch(`/api/admin/items/${id}/versions`, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  })
+}
+
+export function submitAdminVersion(versionId: string) {
+  return adminFetch(`/api/admin/versions/${versionId}/submit`, { method: 'POST' })
+}
