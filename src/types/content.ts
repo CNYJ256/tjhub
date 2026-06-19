@@ -1,4 +1,4 @@
-export type ContentType = 'page' | 'guide' | 'link' | 'project'
+export type ContentType = 'page' | 'guide' | 'link' | 'project' | 'category' | 'banner'
 export type SourceKind = 'official' | 'student' | 'third_party' | 'internal'
 export type EntryStatus = 'active' | 'stale' | 'unavailable' | 'archived'
 export type Visibility = 'public' | 'hidden' | 'draft'
@@ -80,4 +80,24 @@ export interface ContentIndex {
   links: LinkEntry[]
   projects: ProjectEntry[]
   categories: Record<string, CategoryMeta>
+}
+
+export interface BannerEntry extends BaseContent {
+  type: 'banner'
+  description: string
+  imageUrl?: string
+  primaryLink?: string
+  secondaryLink?: string
+  priority: number
+}
+
+export interface PublicContentSnapshot {
+  version: number
+  generatedAt: string
+  pages: PageContent[]
+  guides: PageContent[]
+  links: LinkEntry[]
+  projects: ProjectEntry[]
+  categories: Record<string, CategoryMeta>
+  banners: BannerEntry[]
 }
