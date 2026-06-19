@@ -8,7 +8,10 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "cf:types": "wrangler types src/worker-configuration.d.ts",
+    "d1:migrate:local": "wrangler d1 migrations apply tjhub-content --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply tjhub-content --remote"
   },
   "dependencies": {
     "@tailwindcss/vite": "latest",
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@types/markdown-it": "latest",
+    "wrangler": "latest",
     "@types/node": "^25.9.3",
     "@vitejs/plugin-vue": "latest",
     "typescript": "latest",

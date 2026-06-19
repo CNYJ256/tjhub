@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "tjhub",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2026-06-19",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tjhub-content",
+      "database_id": "511ffd77-142b-4682-a297-df8637a3a372"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "tjhub-media"
+    }
+  ],
+  "vars": {
+    "MEDIA_PUBLIC_BASE_URL": "https://media.tjhub.cc",
+    "ACCESS_AUD": "<YOUR_ACCESS_AUD>",
+    "ACCESS_TEAM_DOMAIN": "<YOUR_ACCESS_TEAM_DOMAIN>"
+  }
+}
