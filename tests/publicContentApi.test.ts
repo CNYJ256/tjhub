@@ -43,3 +43,17 @@ describe('groupPublicItems', () => {
     expect(snapshot.generatedAt).toBeTruthy()
   })
 })
+
+describe('public API fallback contract', () => {
+  it('treats a full empty snapshot as invalid for frontend fallback', () => {
+    const snapshot = { pages: [], guides: [], links: [], projects: [], categories: {}, banners: [] }
+    const empty =
+      snapshot.pages.length === 0 &&
+      snapshot.links.length === 0 &&
+      snapshot.projects.length === 0 &&
+      Object.keys(snapshot.categories).length === 0 &&
+      snapshot.banners.length === 0
+
+    expect(empty).toBe(true)
+  })
+})
