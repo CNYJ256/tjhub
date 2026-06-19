@@ -65,7 +65,7 @@ export function rollbackAdminItem(itemId: string, versionId: string, note = '') 
   })
 }
 
-export async function uploadAdminMedia(file: File, altText: string) {
+export async function uploadAdminMedia(file: File, altText: string): Promise<{ ok: true; media: unknown }> {
   const body = new FormData()
   body.set('file', file)
   body.set('altText', altText)
@@ -76,5 +76,5 @@ export async function uploadAdminMedia(file: File, altText: string) {
   })
 
   if (!response.ok) throw new Error(await response.text())
-  return await response.json()
+  return (await response.json()) as { ok: true; media: unknown }
 }
