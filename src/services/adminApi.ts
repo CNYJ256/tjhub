@@ -43,3 +43,38 @@ export function saveAdminVersion(id: string, body: { title: string; description?
 export function submitAdminVersion(versionId: string) {
   return adminFetch(`/api/admin/versions/${versionId}/submit`, { method: 'POST' })
 }
+
+export function reviewAdminVersion(versionId: string, action: 'approve' | 'reject', note: string) {
+  return adminFetch(`/api/admin/versions/${versionId}/review`, {
+    method: 'POST',
+    body: JSON.stringify({ action, note })
+  })
+}
+
+export function publishAdminItem(itemId: string, versionId: string, note = '') {
+  return adminFetch(`/api/admin/items/${itemId}/publish`, {
+    method: 'POST',
+    body: JSON.stringify({ versionId, note })
+  })
+}
+
+export function rollbackAdminItem(itemId: string, versionId: string, note = '') {
+  return adminFetch(`/api/admin/items/${itemId}/rollback`, {
+    method: 'POST',
+    body: JSON.stringify({ versionId, note })
+  })
+}
+
+export async function uploadAdminMedia(file: File, altText: string) {
+  const body = new FormData()
+  body.set('file', file)
+  body.set('altText', altText)
+
+  const response = await fetch('/api/admin/media/upload', {
+    method: 'POST',
+    body
+  })
+
+  if (!response.ok) throw new Error(await response.text())
+  return await response.json()
+}
