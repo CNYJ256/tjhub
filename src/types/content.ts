@@ -68,9 +68,16 @@ export interface PageContent extends BaseContent {
   blocks: PageBlock[]
 }
 
+export interface CategoryMeta {
+  key: string
+  label: string
+  description: string
+}
+
 export interface ContentIndex {
   pages: PageContent[]
   guides: PageContent[]
   links: LinkEntry[]
   projects: ProjectEntry[]
+  categories: Record<string, CategoryMeta>
 }

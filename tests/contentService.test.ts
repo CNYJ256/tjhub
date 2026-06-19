@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeMarkdownContent, publicApproved } from '../src/services/content'
+import { normalizeMarkdownContent, parseCategoryTaxonomy, publicApproved } from '../src/services/content'
 
 const linkMarkdown = `---
 type: link
@@ -38,5 +38,18 @@ describe('content service', () => {
     expect(publicApproved({ visibility: 'public', reviewStatus: 'approved' })).toBe(true)
     expect(publicApproved({ visibility: 'draft', reviewStatus: 'approved' })).toBe(false)
     expect(publicApproved({ visibility: 'public', reviewStatus: 'pending' })).toBe(false)
+  })
+
+  it('parses category taxonomy labels for public UI', () => {
+    const categories = parseCategoryTaxonomy(`official:
+  label: 官方网站
+  description: 学校官方系统和服务入口
+tools:
+  label: 常用工具
+  description: 多数同学都会用到的校园工具
+`)
+
+    expect(categories.official.label).toBe('官方网站')
+    expect(categories.tools.description).toBe('多数同学都会用到的校园工具')
   })
 })

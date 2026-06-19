@@ -17,7 +17,13 @@ watchEffect(() => {
   category.value = typeof route.query.category === 'string' ? route.query.category : ''
 })
 
-const categories = computed(() => [...new Set(contentIndex.links.map((link) => link.category))])
+const categories = computed(() =>
+  [...new Set(contentIndex.links.map((link) => link.category))].map((key) => ({
+    key,
+    label: contentIndex.categories[key]?.label ?? key,
+    description: contentIndex.categories[key]?.description ?? ''
+  }))
+)
 const filtered = computed(() => {
   const searched = searchLinks(contentIndex.links, query.value)
   return category.value ? searched.filter((link) => link.category === category.value) : searched

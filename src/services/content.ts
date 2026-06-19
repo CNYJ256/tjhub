@@ -1,6 +1,6 @@
 import matter from 'gray-matter'
 import MarkdownIt from 'markdown-it'
-import type { BaseContent, ContentIndex, LinkEntry, PageContent, ProjectEntry } from '../types/content'
+import type { BaseContent, CategoryMeta, ContentIndex, LinkEntry, PageContent, ProjectEntry } from '../types/content'
 import { linkSchema, pageSchema, projectSchema } from './contentSchemas'
 
 const markdown = new MarkdownIt({ html: false, linkify: true, typographer: true })
@@ -42,8 +42,61 @@ function loadRawMarkdown(): Array<{ path: string; raw: string }> {
   return Object.entries(modules).map(([path, raw]) => ({ path, raw }))
 }
 
+function loadRawTaxonomies(): Array<{ path: string; raw: string }> {
+  const modules = import.meta.glob('/content/taxonomies/*.yaml', {
+    query: '?raw',
+    import: 'default',
+    eager: true
+  }) as Record<string, string>
+
+  return Object.entries(modules).map(([path, raw]) => ({ path, raw }))
+}
+
+export function parseCategoryTaxonomy(raw: string): Record<string, CategoryMeta> {
+  const categories: Record<string, CategoryMeta> = {}
+  let currentKey = ''
+
+  for (const rawLine of raw.split(/\r?\n/)) {
+    const line = rawLine.trimEnd()
+
+    if (!line.trim()) {
+      continue
+    }
+
+    const topLevelMatch = /^([A-Za-z0-9_-]+):$/.exec(line)
+    if (topLevelMatch) {
+      currentKey = topLevelMatch[1]
+      categories[currentKey] = { key: currentKey, label: currentKey, description: '' }
+      continue
+    }
+
+    const fieldMatch = /^\s+(label|description):\s*(.+)$/.exec(line)
+    if (fieldMatch && currentKey) {
+      if (fieldMatch[1] === 'label') {
+        categories[currentKey].label = fieldMatch[2].trim()
+      } else {
+        categories[currentKey].description = fieldMatch[2].trim()
+      }
+    }
+  }
+
+  return categories
+}
+
+function loadCategories(): Record<string, CategoryMeta> {
+  const categories: Record<string, CategoryMeta> = {}
+
+  for (const entry of loadRawTaxonomies()) {
+    if (entry.path.endsWith('/categories.yaml')) {
+      Object.assign(categories, parseCategoryTaxonomy(entry.raw))
+    }
+  }
+
+  return categories
+}
+
 export function loadContentIndex(): ContentIndex {
-  const index: ContentIndex = { pages: [], guides: [], links: [], projects: [] }
+  const index: ContentIndex = { pages: [], guides: [], links: [], projects: [], categories: loadCategories() }
 
   for (const entry of loadRawMarkdown()) {
     try {

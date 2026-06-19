@@ -36,6 +36,10 @@ describe('searchLinks', () => {
     expect(searchLinks([baseLink], '官方')).toHaveLength(1)
   })
 
+  it('matches Chinese category labels', () => {
+    expect(searchLinks([baseLink], '官方网站')).toHaveLength(1)
+  })
+
   it('returns all links for empty query', () => {
     expect(searchLinks([baseLink], '')).toHaveLength(1)
   })

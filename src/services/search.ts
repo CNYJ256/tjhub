@@ -8,10 +8,12 @@ function normalize(value: string): string {
 }
 
 function haystack(entry: SearchableEntry): string {
+  const categoryLabel = contentIndex.categories[entry.category]?.label ?? entry.category
   const parts = [
     entry.title,
     entry.description,
     entry.category,
+    categoryLabel,
     ...entry.tags,
     ...entry.aliases,
     entry.body
