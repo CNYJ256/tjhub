@@ -17,16 +17,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const body = await readJson<SaveVersionBody>(request)
   if (!body.title) return errorJson(400, 'validation_error', '标题不能为空。')
 
-  const latest = await env.DB.prepare('SELECT max(version_number) AS max_version FROM content_versions WHERE item_id = ?').bind(itemId).first<{ max_version: number }>()
-  const nextVersion = (latest?.max_version || 0) + 1
+  const itemExists = await env.DB.prepare('SELECT id FROM content_items WHERE id = ?').bind(itemId).first()
+  if (!itemExists) return errorJson(404, 'not_found', '内容不存在。')
+
   const versionId = newId('ver')
 
   await env.DB.batch([
-    env.DB.prepare('INSERT INTO content_versions (id, item_id, version_number, status, title, description, payload_json, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(versionId, itemId, nextVersion, 'draft', body.title, body.description || '', JSON.stringify(body.payload || {}), user.id),
+    env.DB.prepare(`INSERT INTO content_versions (id, item_id, version_number, status, title, description, payload_json, created_by)
+      SELECT ?, ?, COALESCE(MAX(version_number), 0) + 1, ?, ?, ?, ?, ?
+      FROM content_versions WHERE item_id = ?`)
+      .bind(versionId, itemId, 'draft', body.title, body.description || null, JSON.stringify(body.payload || {}), user.id, itemId),
     env.DB.prepare('UPDATE content_items SET current_version_id = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .bind(versionId, user.id, itemId)
   ])
 
-  return json({ ok: true, versionId, versionNumber: nextVersion }, { status: 201 })
+  return json({ ok: true, versionId }, { status: 201 })
 }

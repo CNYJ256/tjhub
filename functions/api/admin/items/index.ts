@@ -28,7 +28,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         ?2 IS NULL
         OR (?2 = 'archived' AND ci.archived_at IS NOT NULL)
         OR (?2 = 'published' AND ci.published_version_id IS NOT NULL AND ci.archived_at IS NULL)
-        OR cv.status = ?2
+        OR (cv.status = ?2 AND ci.archived_at IS NULL)
       )
     ORDER BY ci.updated_at DESC
   `).bind(type, status).all()
@@ -53,7 +53,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     env.DB.prepare('INSERT INTO content_items (id, type, slug, current_version_id, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(itemId, body.type, body.slug, versionId, user.id, user.id),
     env.DB.prepare('INSERT INTO content_versions (id, item_id, version_number, status, title, description, payload_json, created_by) VALUES (?, ?, 1, ?, ?, ?, ?, ?)')
-      .bind(versionId, itemId, 'draft', body.title, body.description || '', payloadJson, user.id)
+      .bind(versionId, itemId, 'draft', body.title, body.description || null, payloadJson, user.id)
   ])
 
   return json({ ok: true, itemId, versionId }, { status: 201 })
