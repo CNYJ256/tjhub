@@ -82,6 +82,10 @@ export function validateAccessClaims(
   env: AccessClaimsEnv,
   nowSeconds = Math.floor(Date.now() / 1000)
 ): { ok: true } | { ok: false; message: string } {
+  if (!env.ACCESS_AUD?.trim() || !env.ACCESS_TEAM_DOMAIN?.trim()) {
+    return { ok: false, message: '后台 Access 配置缺失。' }
+  }
+
   const email = typeof payload.email === 'string' ? payload.email : ''
   const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud]
   const issuer = typeof payload.iss === 'string' ? payload.iss.replace(/\/$/, '') : ''

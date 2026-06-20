@@ -39,4 +39,19 @@ describe('validateAccessClaims', () => {
       nbf: now - 60
     }, env, now)).toMatchObject({ ok: false })
   })
+
+  it('rejects missing Access environment without throwing', () => {
+    const now = 1_800_000_000
+
+    expect(validateAccessClaims({
+      email: 'admin@example.com',
+      aud: ['aud-123'],
+      iss: 'https://tjhub.cloudflareaccess.com',
+      exp: now + 60,
+      nbf: now - 60
+    }, { ACCESS_AUD: '', ACCESS_TEAM_DOMAIN: '' }, now)).toEqual({
+      ok: false,
+      message: '后台 Access 配置缺失。'
+    })
+  })
 })

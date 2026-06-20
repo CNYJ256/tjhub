@@ -1,5 +1,16 @@
 import type { AdminItemListRow, AdminMeResponse } from '../types/admin'
 
+export async function readAdminErrorMessage(response: Response): Promise<string> {
+  const contentType = response.headers.get('content-type') || ''
+
+  if (contentType.includes('application/json')) {
+    const data = await response.json().catch(() => null) as { error?: { message?: string } } | null
+    if (data?.error?.message) return data.error.message
+  }
+
+  return `后台接口请求失败（HTTP ${response.status}）。请检查 Cloudflare Pages Functions 日志。`
+}
+
 async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -10,8 +21,7 @@ async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(text || '后台接口请求失败。')
+    throw new Error(await readAdminErrorMessage(response))
   }
 
   return (await response.json()) as T
