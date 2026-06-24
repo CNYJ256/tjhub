@@ -4,7 +4,7 @@ import SiteFooter from './SiteFooter.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-950">
+  <div class="min-h-screen bg-[var(--color-page)] text-[var(--color-text)]">
     <SiteHeader />
     <main>
       <slot />
