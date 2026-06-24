@@ -24,10 +24,10 @@ const entries = computed(() => {
 </script>
 
 <template>
-  <section class="mx-auto max-w-6xl px-4 py-12">
-    <h2 v-if="title" class="text-2xl font-semibold tracking-normal text-slate-950">{{ title }}</h2>
-    <div :class="title ? 'mt-6' : ''">
-      <CollectionList :entries="entries" />
+  <section class="mx-auto max-w-6xl px-[var(--space-page-x)] py-10">
+    <div v-if="title" class="mb-5 flex items-end justify-between gap-4">
+      <h2 class="text-2xl font-semibold tracking-normal text-[var(--color-text)]">{{ title }}</h2>
     </div>
+    <CollectionList :entries="entries" />
   </section>
 </template>

@@ -12,5 +12,16 @@ defineProps<{ status: EntryStatus }>()
 </script>
 
 <template>
-  <span class="rounded border border-slate-200 px-2 py-0.5 text-xs text-slate-600">{{ labels[status] }}</span>
+  <span
+    class="rounded-[var(--radius-control)] border px-2 py-0.5 text-xs"
+    :class="status === 'active'
+      ? 'border-[var(--color-accent-soft)] bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
+      : status === 'stale'
+        ? 'border-yellow-200 bg-yellow-50 text-yellow-800'
+        : status === 'unavailable'
+          ? 'border-red-200 bg-red-50 text-red-700'
+          : 'border-[var(--color-border)] bg-[var(--color-surface-soft)] text-[var(--color-muted)]'"
+  >
+    {{ labels[status] }}
+  </span>
 </template>

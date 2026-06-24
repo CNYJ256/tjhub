@@ -12,5 +12,5 @@ defineProps<{ kind: SourceKind }>()
 </script>
 
 <template>
-  <span class="rounded border border-slate-200 px-2 py-0.5 text-xs text-slate-600">{{ labels[kind] }}</span>
+  <span class="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-soft)] px-2 py-0.5 text-xs text-[var(--color-muted)]">{{ labels[kind] }}</span>
 </template>
