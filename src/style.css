@@ -3,13 +3,47 @@
 :root {
   color-scheme: light;
   font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
-  background: #f7f8fb;
-  color: #172033;
+  background: #f8faf7;
+  color: #18211f;
+
+  --color-page: #f8faf7;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f1f5ef;
+  --color-border: #dbe4d8;
+  --color-border-strong: #b8c8b3;
+  --color-text: #18211f;
+  --color-text-soft: #3f4b45;
+  --color-muted: #6c766f;
+  --color-accent: #2f6f5e;
+  --color-accent-hover: #24584b;
+  --color-accent-soft: #e6f3ed;
+  --color-focus: #6aa58e;
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-warning: #9a6700;
+  --color-warning-soft: #fff7df;
+  --radius-control: 8px;
+  --radius-panel: 8px;
+  --shadow-soft: 0 14px 40px rgb(24 33 31 / 0.08);
+  --space-page-x: clamp(1rem, 3vw, 1.5rem);
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  background: var(--color-page);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
 }
 
 a:not([class]) {
