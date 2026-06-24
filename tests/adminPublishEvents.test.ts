@@ -41,3 +41,25 @@ describe('admin publish events endpoint', () => {
     expect(source).toContain('publish')
   })
 })
+
+describe('admin publish events view routing', () => {
+  it('routes publish events to the dedicated view', () => {
+    const source = readFileSync('src/router/index.ts', 'utf8')
+
+    expect(source).toContain("path: '/admin/publish-events'")
+    expect(source).toContain("import('../views/admin/AdminPublishEventsView.vue')")
+    expect(source).not.toContain("name: 'admin-publish-events', component: () => import('../views/admin/AdminReviewView.vue')")
+  })
+
+  it('renders a Chinese publish records timeline with detail links', () => {
+    const source = readFileSync('src/views/admin/AdminPublishEventsView.vue', 'utf8')
+
+    expect(source).toContain('发布记录')
+    expect(source).toContain('查看最近发布和回滚的内容版本。')
+    expect(source).toContain('fetchAdminPublishEvents')
+    expect(source).toContain('查看内容')
+    expect(source).toContain('/admin/items/')
+    expect(source).toContain('暂无发布记录。')
+    expect(source).toContain('无法读取发布记录。')
+  })
+})
