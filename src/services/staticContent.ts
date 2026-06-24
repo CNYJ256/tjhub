@@ -1,7 +1,10 @@
+import { Buffer } from 'buffer'
 import matter from 'gray-matter'
 import MarkdownIt from 'markdown-it'
 import type { BaseContent, CategoryMeta, ContentIndex, LinkEntry, PageContent, ProjectEntry } from '../types/content'
 import { linkSchema, pageSchema, projectSchema } from './contentSchemas'
+
+globalThis.Buffer = Buffer
 
 const markdown = new MarkdownIt({ html: false, linkify: true, typographer: true })
 

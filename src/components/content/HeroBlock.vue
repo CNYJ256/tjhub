@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SourceBadge from '../collections/SourceBadge.vue'
 import StatusBadge from '../collections/StatusBadge.vue'
 import { contentState } from '../../services/contentStore'
@@ -9,7 +9,9 @@ import { selectHomeQuickEntries } from '../../services/homeQuickEntries'
 defineProps<{ title?: string; description?: string }>()
 
 const router = useRouter()
+const route = useRoute()
 const query = ref('')
+const isHome = computed(() => route.path === '/')
 const quickEntries = computed(() => selectHomeQuickEntries(contentState.index.links))
 
 function submitSearch() {
@@ -19,7 +21,12 @@ function submitSearch() {
 </script>
 
 <template>
-  <section class="mx-auto grid min-h-[70vh] max-w-6xl items-center gap-8 px-[var(--space-page-x)] py-10 lg:grid-cols-[1fr_1.05fr] lg:py-12">
+  <section v-if="!isHome" class="mx-auto max-w-6xl px-[var(--space-page-x)] py-12">
+    <h1 class="text-4xl font-semibold tracking-normal text-[var(--color-text)]">{{ title }}</h1>
+    <p v-if="description" class="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-text-soft)]">{{ description }}</p>
+  </section>
+
+  <section v-else class="mx-auto grid max-w-6xl items-center gap-8 px-[var(--space-page-x)] py-10 lg:min-h-[70vh] lg:grid-cols-[1fr_1.05fr] lg:py-12">
     <div>
       <h1 class="text-4xl font-semibold tracking-normal text-[var(--color-text)] sm:text-5xl">{{ title }}</h1>
       <p v-if="description" class="mt-4 max-w-xl text-lg leading-8 text-[var(--color-text-soft)]">{{ description }}</p>
@@ -36,7 +43,7 @@ function submitSearch() {
       <p class="mt-4 text-sm text-[var(--color-muted)]">非官方学生维护入口，优先整理常用系统、工具与指南。</p>
     </div>
 
-    <div class="grid gap-3 sm:grid-cols-2">
+    <div class="grid auto-cols-[minmax(14rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:overflow-visible sm:pb-0">
       <a
         v-for="entry in quickEntries"
         :key="entry.slug"
