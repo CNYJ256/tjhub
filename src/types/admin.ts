@@ -24,3 +24,36 @@ export interface AdminItemListRow {
   current_title: string | null
   archived_at: string | null
 }
+
+export type AdminContentType = 'page' | 'guide' | 'link' | 'project' | 'category' | 'banner'
+export type AdminPublishAction = 'publish' | 'rollback'
+
+export interface AdminPublishEventDto {
+  id: number
+  itemId: string
+  itemType: AdminContentType
+  itemSlug: string
+  itemTitle: string
+  action: AdminPublishAction
+  fromVersionId: string | null
+  toVersionId: string
+  actorEmail: string
+  actorName: string
+  note: string
+  createdAt: string
+}
+
+export interface AdminPublishEventsResponse {
+  ok: true
+  events: AdminPublishEventDto[]
+}
+
+export interface AdminMediaDto {
+  id: string
+  r2Key: string
+  filename: string
+  mimeType: string
+  sizeBytes: number
+  altText: string
+  url: string
+}

@@ -1,4 +1,4 @@
-import type { AdminItemListRow, AdminMeResponse } from '../types/admin'
+import type { AdminItemListRow, AdminMeResponse, AdminMediaDto, AdminPublishEventsResponse } from '../types/admin'
 
 export async function readAdminErrorMessage(response: Response): Promise<string> {
   const contentType = response.headers.get('content-type') || ''
@@ -43,6 +43,10 @@ export function fetchAdminItem(id: string): Promise<{ ok: true; item: unknown; v
   return adminFetch(`/api/admin/items/${id}`)
 }
 
+export function fetchAdminPublishEvents(): Promise<AdminPublishEventsResponse> {
+  return adminFetch<AdminPublishEventsResponse>('/api/admin/publish-events')
+}
+
 export function saveAdminVersion(id: string, body: { title: string; description?: string; payload: Record<string, unknown> }) {
   return adminFetch(`/api/admin/items/${id}/versions`, {
     method: 'POST',
@@ -82,7 +86,7 @@ export function createAdminItem(body: { type: string; slug: string; title: strin
   })
 }
 
-export async function uploadAdminMedia(file: File, altText: string): Promise<{ ok: true; media: unknown }> {
+export async function uploadAdminMedia(file: File, altText: string): Promise<{ ok: true; media: AdminMediaDto }> {
   const body = new FormData()
   body.set('file', file)
   body.set('altText', altText)
@@ -92,6 +96,6 @@ export async function uploadAdminMedia(file: File, altText: string): Promise<{ o
     body
   })
 
-  if (!response.ok) throw new Error(await response.text())
-  return (await response.json()) as { ok: true; media: unknown }
+  if (!response.ok) throw new Error(await readAdminErrorMessage(response))
+  return (await response.json()) as { ok: true; media: AdminMediaDto }
 }
