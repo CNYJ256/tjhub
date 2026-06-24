@@ -17,6 +17,11 @@ const messageType = ref<'success' | 'error'>('success')
 const item = ref<any>(null)
 const versions = ref<any[]>([])
 const latestPayload = ref<Record<string, unknown>>({})
+const saving = ref(false)
+const submitting = ref(false)
+const reviewingAction = ref<'approve' | 'reject' | null>(null)
+const publishingVersionId = ref<string | null>(null)
+const rollingBackVersionId = ref<string | null>(null)
 
 async function loadItem() {
   loading.value = true
@@ -39,6 +44,8 @@ onMounted(() => {
 })
 
 async function save(payload: Record<string, unknown>) {
+  if (saving.value) return
+  saving.value = true
   message.value = ''
   try {
     await saveAdminVersion(itemId, {
@@ -52,12 +59,16 @@ async function save(payload: Record<string, unknown>) {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '保存失败。'
     messageType.value = 'error'
+  } finally {
+    saving.value = false
   }
 }
 
 async function submit() {
+  if (submitting.value) return
   const toSubmit = versions.value[0]
   if (!toSubmit) return
+  submitting.value = true
   message.value = ''
   try {
     await submitAdminVersion(toSubmit.id)
@@ -67,11 +78,14 @@ async function submit() {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '提交失败。'
     messageType.value = 'error'
+  } finally {
+    submitting.value = false
   }
 }
 
 const reviewNote = ref('')
 async function review(action: 'approve' | 'reject') {
+  if (reviewingAction.value) return
   const toReview = versions.value.find((v: any) => v.status === 'pending')
   if (!toReview) return
   if (action === 'reject' && !reviewNote.value.trim()) {
@@ -79,6 +93,7 @@ async function review(action: 'approve' | 'reject') {
     messageType.value = 'error'
     return
   }
+  reviewingAction.value = action
   message.value = ''
   try {
     await reviewAdminVersion(toReview.id, action, reviewNote.value)
@@ -89,10 +104,14 @@ async function review(action: 'approve' | 'reject') {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '审核操作失败。'
     messageType.value = 'error'
+  } finally {
+    reviewingAction.value = null
   }
 }
 
 async function publishVersion(versionId: string) {
+  if (publishingVersionId.value) return
+  publishingVersionId.value = versionId
   message.value = ''
   try {
     await publishAdminItem(itemId, versionId)
@@ -102,10 +121,14 @@ async function publishVersion(versionId: string) {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '发布失败。'
     messageType.value = 'error'
+  } finally {
+    publishingVersionId.value = null
   }
 }
 
 async function rollbackToVersion(versionId: string) {
+  if (rollingBackVersionId.value) return
+  rollingBackVersionId.value = versionId
   message.value = ''
   try {
     await rollbackAdminItem(itemId, versionId)
@@ -115,6 +138,8 @@ async function rollbackToVersion(versionId: string) {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '回滚失败。'
     messageType.value = 'error'
+  } finally {
+    rollingBackVersionId.value = null
   }
 }
 
@@ -151,20 +176,31 @@ const showEditor = ref(true)
           <button
             v-if="versions[0] && (versions[0].status === 'draft' || versions[0].status === 'rejected')"
             type="button"
-            class="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+            :disabled="submitting"
+            class="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
             @click="submit()"
           >
-            提交审核
+            {{ submitting ? '提交中...' : '提交审核' }}
           </button>
 
           <!-- Review: admin sees pending → approve/reject -->
           <template v-if="user?.role === 'admin' && versions[0]?.status === 'pending'">
             <input v-model="reviewNote" class="rounded border px-2 py-1.5 text-sm" placeholder="审核意见（拒绝时必填）" />
-            <button type="button" class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700" @click="review('approve')">
-              批准
+            <button
+              type="button"
+              :disabled="reviewingAction !== null"
+              class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
+              @click="review('approve')"
+            >
+              {{ reviewingAction === 'approve' ? '批准中...' : '批准' }}
             </button>
-            <button type="button" class="rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700" @click="review('reject')">
-              拒绝
+            <button
+              type="button"
+              :disabled="reviewingAction !== null"
+              class="rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+              @click="review('reject')"
+            >
+              {{ reviewingAction === 'reject' ? '拒绝中...' : '拒绝' }}
             </button>
           </template>
 
@@ -174,23 +210,26 @@ const showEditor = ref(true)
               v-for="v in versions.filter((v: any) => v.status === 'approved')"
               :key="'pub-' + v.id"
               type="button"
-              class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700"
+              :disabled="publishingVersionId === v.id"
+              class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
               @click="publishVersion(v.id)"
             >
-              发布 v{{ v.version_number }}
+              {{ publishingVersionId === v.id ? `发布 v${v.version_number} 中...` : `发布 v${v.version_number}` }}
             </button>
           </template>
         </div>
 
         <!-- Editor or Version Timeline -->
         <template v-if="showEditor">
-          <BlockEditor v-if="['page', 'guide', 'banner', 'category'].includes(item?.type)" :initial="latestPayload" @save="save" />
-          <LinkProjectForm v-else :initial="latestPayload" @save="save" />
+          <BlockEditor v-if="['page', 'guide', 'banner', 'category'].includes(item?.type)" :initial="latestPayload" :saving="saving" @save="save" />
+          <LinkProjectForm v-else :initial="latestPayload" :saving="saving" @save="save" />
         </template>
         <VersionTimeline
           v-else
           :versions="versions"
           :item-id="itemId"
+          :publishing-version-id="publishingVersionId"
+          :rolling-back-version-id="rollingBackVersionId"
           @publish="publishVersion"
           @rollback="rollbackToVersion"
         />

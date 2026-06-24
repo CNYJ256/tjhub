@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ versions: any[]; itemId: string }>()
+defineProps<{ versions: any[]; itemId: string; rollingBackVersionId?: string | null; publishingVersionId?: string | null }>()
 defineEmits<{
   publish: [versionId: string]
   rollback: [versionId: string]
@@ -18,18 +18,20 @@ defineEmits<{
           <button
             v-if="version.status === 'approved'"
             type="button"
-            class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700"
+            :disabled="publishingVersionId === version.id"
+            class="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
             @click="$emit('publish', version.id)"
           >
-            发布
+            {{ publishingVersionId === version.id ? '发布中...' : '发布' }}
           </button>
           <button
             v-if="version.status === 'approved'"
             type="button"
-            class="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
+            :disabled="rollingBackVersionId === version.id"
+            class="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700 disabled:opacity-50"
             @click="$emit('rollback', version.id)"
           >
-            回滚到此版本
+            {{ rollingBackVersionId === version.id ? '回滚中...' : '回滚到此版本' }}
           </button>
         </div>
       </div>

@@ -11,7 +11,7 @@ interface EditableBlock {
   body?: string
 }
 
-const props = defineProps<{ initial?: { title?: string; blocks?: EditableBlock[]; body?: string } }>()
+const props = defineProps<{ initial?: { title?: string; blocks?: EditableBlock[]; body?: string }; saving?: boolean }>()
 const emit = defineEmits<{ save: [payload: Record<string, unknown>] }>()
 
 const form = reactive({
@@ -62,6 +62,8 @@ function save() {
       <label class="block text-sm">正文<textarea v-model="block.body" class="mt-1 min-h-32 w-full border px-3 py-2" /></label>
     </section>
     <button type="button" class="rounded border px-4 py-2" @click="addBlock()">新增 Markdown 区块</button>
-    <button class="rounded bg-slate-900 px-4 py-2 text-white" type="submit">保存新版本</button>
+    <button :disabled="saving" class="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50" type="submit">
+      {{ saving ? '保存中...' : '保存新版本' }}
+    </button>
   </form>
 </template>

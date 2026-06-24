@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 
-const props = defineProps<{ initial?: Record<string, unknown> }>()
+const props = defineProps<{ initial?: Record<string, unknown>; saving?: boolean }>()
 const emit = defineEmits<{ save: [payload: Record<string, unknown>] }>()
 
 const form = reactive({
@@ -91,6 +91,8 @@ function submit() {
     <label class="block text-sm">指南 Slug
       <input v-model="form.guideSlug" class="mt-1 w-full border px-3 py-2 rounded" />
     </label>
-    <button class="rounded bg-slate-900 px-4 py-2 text-white" type="submit">保存新版本</button>
+    <button :disabled="saving" class="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50" type="submit">
+      {{ saving ? '保存中...' : '保存新版本' }}
+    </button>
   </form>
 </template>

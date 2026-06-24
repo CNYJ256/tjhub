@@ -10,6 +10,7 @@ const message = ref('')
 const messageType = ref<'success' | 'error'>('success')
 const reviewNote = ref('')
 const reviewingId = ref<string | null>(null)
+const reviewingAction = ref<'approve' | 'reject' | null>(null)
 
 onMounted(async () => {
   await loadItems()
@@ -25,6 +26,7 @@ async function loadItems() {
 }
 
 async function review(itemId: string, action: 'approve' | 'reject') {
+  if (reviewingAction.value) return
   const detail = await fetchAdminItem(itemId)
   const pendingVersion = ((detail.versions as any[]) || []).find((v: any) => v.status === 'pending')
   if (!pendingVersion) {
@@ -37,6 +39,7 @@ async function review(itemId: string, action: 'approve' | 'reject') {
     messageType.value = 'error'
     return
   }
+  reviewingAction.value = action
   try {
     await reviewAdminVersion(pendingVersion.id, action, reviewNote.value)
     message.value = action === 'approve' ? '已批准。' : '已拒绝。'
@@ -47,6 +50,8 @@ async function review(itemId: string, action: 'approve' | 'reject') {
   } catch (err) {
     message.value = err instanceof Error ? err.message : '审核操作失败。'
     messageType.value = 'error'
+  } finally {
+    reviewingAction.value = null
   }
 }
 </script>
@@ -62,8 +67,20 @@ async function review(itemId: string, action: 'approve' | 'reject') {
       <!-- Review controls -->
       <div v-if="reviewingId" class="mt-4 flex items-center gap-2">
         <input v-model="reviewNote" class="flex-1 rounded border px-3 py-2 text-sm" placeholder="审核意见（拒绝时必填）" />
-        <button class="rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700" @click="review(reviewingId!, 'approve')">批准</button>
-        <button class="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700" @click="review(reviewingId!, 'reject')">拒绝</button>
+        <button
+          :disabled="reviewingAction !== null"
+          class="rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
+          @click="review(reviewingId!, 'approve')"
+        >
+          {{ reviewingAction === 'approve' ? '审核中...' : '批准' }}
+        </button>
+        <button
+          :disabled="reviewingAction !== null"
+          class="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+          @click="review(reviewingId!, 'reject')"
+        >
+          {{ reviewingAction === 'reject' ? '审核中...' : '拒绝' }}
+        </button>
         <button class="rounded border px-4 py-2 text-sm" @click="reviewingId = null">取消</button>
       </div>
 
