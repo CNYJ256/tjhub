@@ -1,23 +1,25 @@
 ---
 type: link
-title: 校园云盘
+title: 同济云盘
 slug: cloud-disk
-url: https://example.com/cloud-disk
-description: 校园云存储与文件共享服务。
+url: https://yunpan.tongji.edu.cn
+description: 同济云盘文件存储、共享与协作入口。
 category: tools
 tags: [工具, 云盘, 存储]
-aliases: [云盘, 网盘, 文件共享, cloud]
+aliases: [云盘, 网盘, 文件共享, cloud, AnyShare, 同济云盘]
 sourceKind: official
 official: true
 featured: true
-placements: [home]
+placements: [home, freshman]
 audience: [all]
 priority: 87
 status: active
 visibility: public
 reviewStatus: approved
 contributors: [tjhub]
-lastCheckedAt: 2026-06-19
+lastCheckedAt: 2026-06-30
 ---
 
-校园云盘入口。请在上线前替换为确认后的真实入口。
+同济云盘用于文件存储、共享和协作。课程资料、团队协作文件或校内文件交换可根据需要使用该入口。
+
+请以学校官方页面和辅导员通知为准。
