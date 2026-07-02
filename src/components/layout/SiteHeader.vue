@@ -10,7 +10,7 @@ const menuOpen = ref(false)
 const navItems = [
   { to: '/nav?category=official', label: '官方网站' },
   { to: '/nav?category=tools', label: '常用工具' },
-  { to: '/freshman', label: '新生指南' },
+  { to: '/freshman', label: '指南' },
   { to: '/projects', label: '学生项目' },
   { to: '/contribute', label: '参与共建' },
   { to: '/about', label: '关于' }

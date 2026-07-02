@@ -9,11 +9,6 @@ blocks:
     title: 新生指南
     description: 面向新同学的校园入口、账号、网络、学习与生活信息索引。
   - type: collectionPreview
-    title: 新生常用入口
-    collection: links
-    placement: freshman
-    limit: 24
-  - type: collectionPreview
     title: 新生指南目录
     collection: guides
   - type: markdown
