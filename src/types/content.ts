@@ -8,6 +8,7 @@ export interface BaseContent {
   type: ContentType
   title: string
   slug: string
+  description?: string
   visibility: Visibility
   reviewStatus: ReviewStatus
   body: string
@@ -58,7 +59,7 @@ export interface PageBlock {
   title?: string
   description?: string
   source?: string
-  collection?: 'links' | 'projects'
+  collection?: 'links' | 'projects' | 'guides'
   placement?: string
   limit?: number
   imageUrl?: string

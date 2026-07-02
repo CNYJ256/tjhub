@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import type { PublicContentSnapshot } from '../types/content'
 
+export const DEFAULT_REMOTE_CONTENT_TIMEOUT_MS = 10000
+
 const linkItemSchema = z.object({
   type: z.literal('link'),
   slug: z.string(),
@@ -42,12 +44,12 @@ export function snapshotIsEmpty(snapshot: Pick<PublicContentSnapshot, 'pages' | 
   )
 }
 
-export async function fetchRemoteContent(timeoutMs = 2000): Promise<PublicContentSnapshot> {
+export async function fetchRemoteContent(timeoutMs = DEFAULT_REMOTE_CONTENT_TIMEOUT_MS): Promise<PublicContentSnapshot> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch('/api/public/content', { signal: controller.signal })
+    const response = await fetch('/api/public/content', { signal: controller.signal, cache: 'no-store' })
     if (!response.ok) {
       throw new Error(`Public content API failed: ${response.status}`)
     }

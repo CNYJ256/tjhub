@@ -13,6 +13,9 @@ blocks:
     collection: links
     placement: freshman
     limit: 24
+  - type: collectionPreview
+    title: 新生指南目录
+    collection: guides
   - type: markdown
 ---
 
@@ -34,4 +37,3 @@ blocks:
 2. 信息化办公室网站汇总网络、邮箱、VPN、Canvas、Look、云盘和正版软件等服务指南。
 3. 体育场馆预约、第二课堂、后勤服务和勤工助学等入口，可按实际需要查询。
 
-资料整理版权归乌龙茶 tongji.icu 所有，如有侵权请联系删除。

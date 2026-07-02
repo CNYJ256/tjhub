@@ -5,7 +5,7 @@ interface EditableBlock {
   type: string
   title?: string
   description?: string
-  collection?: 'links' | 'projects'
+  collection?: 'links' | 'projects' | 'guides'
   placement?: string
   limit?: number
   body?: string
@@ -59,6 +59,18 @@ function save() {
       <label class="block text-sm">类型<input v-model="block.type" class="mt-1 w-full border px-3 py-2" /></label>
       <label class="block text-sm">标题<input v-model="block.title" class="mt-1 w-full border px-3 py-2" /></label>
       <label class="block text-sm">描述<textarea v-model="block.description" class="mt-1 w-full border px-3 py-2" /></label>
+      <div class="grid gap-3 md:grid-cols-3">
+        <label class="block text-sm">集合
+          <select v-model="block.collection" class="mt-1 w-full border px-3 py-2">
+            <option value="">不使用集合</option>
+            <option value="links">链接</option>
+            <option value="projects">项目</option>
+            <option value="guides">指南</option>
+          </select>
+        </label>
+        <label class="block text-sm">展示位置<input v-model="block.placement" class="mt-1 w-full border px-3 py-2" /></label>
+        <label class="block text-sm">数量上限<input v-model.number="block.limit" type="number" min="1" class="mt-1 w-full border px-3 py-2" /></label>
+      </div>
       <label class="block text-sm">正文<textarea v-model="block.body" class="mt-1 min-h-32 w-full border px-3 py-2" /></label>
     </section>
     <button type="button" class="rounded border px-4 py-2" @click="addBlock()">新增 Markdown 区块</button>

@@ -12,7 +12,7 @@ const pageBlockSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   source: z.string().optional(),
-  collection: z.enum(['links', 'projects']).optional(),
+  collection: z.enum(['links', 'projects', 'guides']).optional(),
   placement: z.string().optional(),
   limit: z.number().int().positive().optional()
 })
